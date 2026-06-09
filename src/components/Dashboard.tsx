@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
 import { UserProfile, CarbonFootprint, WeeklyChallenge, EmissionHistoryItem } from '../types';
-import { getEmissionsClassification } from '../utils/carbonCalculator';
+import {
+  getEmissionsClassification,
+  calculateTransportEmissions,
+  calculateDietEmissions,
+  calculateEnergyEmissions,
+  calculateShoppingEmissions
+} from '../utils/carbonCalculator';
 import { GLOBAL_BENCHMARKS } from '../utils/presets';
 import { Leaf, Calendar, Share2, Plus, TrendingDown, Sparkles, AlertCircle, Trash2, CheckCircle2, HelpCircle } from 'lucide-react';
-import SourcesModal from './SourcesModal';
+import MethodologyModal from './MethodologyModal';
+import CalculationSources from './CalculationSources';
+import CarbonFootprintArt from './CarbonFootprintArt';
 
 interface DashboardProps {
   profile: UserProfile;
@@ -14,6 +22,7 @@ interface DashboardProps {
   onAddHistoryLog: (emissions: CarbonFootprint) => void;
   onClearHistory: () => void;
   onNavigateToCoach: () => void;
+  onUpdateProfile: (profile: UserProfile) => void;
 }
 
 export default function Dashboard({
@@ -25,10 +34,59 @@ export default function Dashboard({
   onAddHistoryLog,
   onClearHistory,
   onNavigateToCoach,
+  onUpdateProfile,
 }: DashboardProps) {
   const [isSimulating, setIsSimulating] = useState(false);
   const [successToast, setSuccessToast] = useState('');
-  const [isSourcesModalOpen, setIsSourcesModalOpen] = useState(false);
+  const [isMethodologyModalOpen, setIsMethodologyModalOpen] = useState(false);
+  const [scoreViewMode, setScoreViewMode] = useState<'gauge' | 'footprint'>('footprint');
+
+  // Sandbox State variables initialized dynamically based on real profile values
+  const [simTransportDistance, setSimTransportDistance] = useState<number>(profile.transport.distance);
+  const [simTransportMethod, setSimTransportMethod] = useState<string>(profile.transport.method);
+  const [simDietType, setSimDietType] = useState<string>(profile.diet.type);
+  const [simCleanEnergy, setSimCleanEnergy] = useState<string>(profile.energy.cleanEnergy);
+
+  // Live simulation outputs
+  const simulatedTransport = calculateTransportEmissions({
+    ...profile.transport,
+    distance: simTransportDistance,
+    method: simTransportMethod as any
+  });
+  const simulatedDiet = calculateDietEmissions({
+    ...profile.diet,
+    type: simDietType as any
+  });
+  const simulatedEnergy = calculateEnergyEmissions({
+    ...profile.energy,
+    cleanEnergy: simCleanEnergy as any
+  });
+  const simulatedShopping = footprint.shopping; // remains baseline constant
+
+  const simulatedTotal = simulatedTransport + simulatedDiet + simulatedEnergy + simulatedShopping;
+  const simulatedSavings = Math.max(0, footprint.total - simulatedTotal);
+
+  // Apply simulated playground data as the user's permanent profile baseline
+  const handleApplySimulatedParameters = () => {
+    const updatedProfile: UserProfile = {
+      ...profile,
+      transport: {
+        ...profile.transport,
+        distance: simTransportDistance,
+        method: simTransportMethod as any
+      },
+      diet: {
+        ...profile.diet,
+        type: simDietType as any
+      },
+      energy: {
+        ...profile.energy,
+        cleanEnergy: simCleanEnergy as any
+      }
+    };
+    onUpdateProfile(updatedProfile);
+    triggerToast("Sandbox settings applied! Your baseline footprint profile has been permanently updated.");
+  };
 
   // Calculations relative to benchmarks
   const classification = getEmissionsClassification(footprint.total);
@@ -105,11 +163,11 @@ export default function Dashboard({
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setIsSourcesModalOpen(true)}
+            onClick={() => setIsMethodologyModalOpen(true)}
             className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer transition-all"
           >
             <HelpCircle className="w-4 h-4 text-emerald-600" />
-            Methodology & Sources
+            Methodology
           </button>
 
           <button
@@ -134,71 +192,95 @@ export default function Dashboard({
       </div>
 
       {/* Score Grid & Categories */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Score Circle Card */}
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold text-slate-800">Carbon Footprint Score</h2>
-              <Leaf className="w-5 h-5 text-emerald-500" />
-            </div>
-
-            <div className="flex flex-col items-center py-6">
-              {/* Circular Graphic */}
-              <div className="relative w-40 h-40 flex items-center justify-center mb-4">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  {/* Background track */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="#eaeaea"
-                    strokeWidth="8"
-                    fill="transparent"
-                  />
-                  {/* Value track */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke={footprint.total > 10000 ? '#f43f5e' : footprint.total > 6000 ? '#f59e0b' : '#10b981'}
-                    strokeWidth="8"
-                    fill="transparent"
-                    strokeDasharray={251.2}
-                    strokeDashoffset={Math.max(0, 251.2 - (251.2 * Math.min(footprint.total, 15000)) / 15000)}
-                    strokeLinecap="round"
-                    className="transition-all duration-1000 ease-out"
-                  />
-                </svg>
-                
-                {/* Score numbers inside */}
-                <div className="absolute text-center">
-                  <span className="text-3xl sm:text-4xl font-extrabold text-slate-950 font-mono">
-                    {Math.round(footprint.total / 100) / 10}
-                  </span>
-                  <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">
-                    Tons CO2e / yr
-                  </p>
+        {scoreViewMode === 'footprint' ? (
+          <div className="lg:col-span-12 xl:col-span-5 lg:col-span-5 flex flex-col justify-between h-full">
+            <CarbonFootprintArt 
+              footprintTotal={footprint.total} 
+              scoreViewMode={scoreViewMode} 
+              setScoreViewMode={setScoreViewMode} 
+            />
+          </div>
+        ) : (
+          <div className="lg:col-span-12 xl:col-span-5 lg:col-span-5 bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 flex flex-col justify-between relative">
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-bold text-slate-800">Carbon Footprint Score</h2>
+                {/* Elegant, clearly visible segment toggle */}
+                <div className="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200 shadow-inner">
+                  <button
+                    onClick={() => setScoreViewMode('footprint')}
+                    className="px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer text-slate-500 hover:text-slate-800 transition-all whitespace-nowrap"
+                  >
+                    Art View
+                  </button>
+                  <button
+                    onClick={() => setScoreViewMode('gauge')}
+                    className="px-3 py-1.5 text-xs font-black rounded-lg cursor-pointer bg-white text-slate-950 shadow-sm border border-slate-200/50 whitespace-nowrap animate-fade-in"
+                  >
+                    Meter View
+                  </button>
                 </div>
               </div>
 
-              {/* Classification Tag */}
-              <div className={`px-4 py-1.5 rounded-full text-xs font-semibold border ${classification.color} text-center max-w-xs mt-2`}>
-                {classification.label}
+              <div className="flex flex-col items-center py-6">
+                {/* Circular Graphic */}
+                <div className="relative w-40 h-40 flex items-center justify-center mb-4">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    {/* Background track */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke="#eaeaea"
+                      strokeWidth="8"
+                      fill="transparent"
+                    />
+                    {/* Value track */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke={footprint.total > 10000 ? '#f43f5e' : footprint.total > 6000 ? '#f59e0b' : '#10b981'}
+                      strokeWidth="8"
+                      fill="transparent"
+                      strokeDasharray={251.2}
+                      strokeDashoffset={Math.max(0, 251.2 - (251.2 * Math.min(footprint.total, 15000)) / 15000)}
+                      strokeLinecap="round"
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  
+                  {/* Score numbers inside */}
+                  <div className="absolute text-center">
+                    <span className="text-3xl sm:text-4xl font-extrabold text-slate-950 font-mono">
+                      {Math.round(footprint.total / 100) / 10}
+                    </span>
+                    <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">
+                      Tons CO2e / yr
+                    </p>
+                  </div>
+                </div>
+
+                {/* Classification Tag */}
+                <div className={`px-4 py-1.5 rounded-full text-xs font-semibold border ${classification.color} text-center max-w-xs mt-2`}>
+                  {classification.label}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="border-t border-slate-100 pt-5 mt-4">
-            <p className="text-xs text-slate-500 leading-relaxed text-center">
-              {classification.description}
-            </p>
+            <div className="border-t border-slate-100 pt-5 mt-4">
+              <p className="text-xs text-slate-500 leading-relaxed text-center">
+                {classification.description}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Categories Breakdown */}
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 flex flex-col justify-between">
+        <div className="lg:col-span-12 xl:col-span-4 lg:col-span-4 bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 flex flex-col justify-between">
           <div>
             <h2 className="text-lg font-bold text-slate-800 mb-6">Emissions Categorisation</h2>
             
@@ -270,7 +352,7 @@ export default function Dashboard({
         </div>
 
         {/* Global Target Comparison */}
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 flex flex-col justify-between">
+        <div className="lg:col-span-12 xl:col-span-3 lg:col-span-3 bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8 flex flex-col justify-between">
           <div>
             <h2 className="text-lg font-bold text-slate-800 mb-6">Global Targets Context</h2>
             
@@ -315,6 +397,159 @@ export default function Dashboard({
         </div>
 
       </div>
+
+      {/* "What-If" Dynamic Carbon Sandbox Simulator */}
+      <section className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8" aria-labelledby="sandbox-title">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-6 border-b border-slate-100 pb-5">
+          <div>
+            <h2 id="sandbox-title" className="text-xl font-bold text-slate-800 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-emerald-500 animate-pulse" />
+              Real-Time &ldquo;What-If&rdquo; Carbon Sandbox Simulator
+            </h2>
+            <p className="text-slate-400 text-xs mt-1">
+              Play with lifestyle sliders to visually model simulated decreases in your annual emissions, before committing.
+            </p>
+          </div>
+          <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase">
+            Interactive Playground
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Sliders Input Segment */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Simulation Parameter 1: Commute Distance */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-xs font-bold text-slate-700">
+                <span>🚘 Commute Travel Distance</span>
+                <span className="text-xs font-bold font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                  {simTransportDistance} km / week
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="500"
+                step="10"
+                value={simTransportDistance}
+                onChange={(e) => setSimTransportDistance(parseInt(e.target.value))}
+                className="w-full accent-emerald-500 cursor-pointer h-2 bg-slate-100 rounded-lg appearance-none"
+              />
+              <p className="text-[10px] text-slate-400">Reduce to model closer work-from-home schedules or active cycling commutes.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-sans">
+              
+              {/* Parameter 2: Commute Vehicle Options */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block col-span-1">🚄 Transition Vehicle</label>
+                <select
+                  value={simTransportMethod}
+                  onChange={(e) => setSimTransportMethod(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition-all"
+                >
+                  <option value="petrol">Petrol Powered Car</option>
+                  <option value="diesel">Diesel Powered Car</option>
+                  <option value="electric">Electric Vehicle (EV)</option>
+                  <option value="transit">Public Rail/Metro</option>
+                  <option value="active">Active Walk/Cycle</option>
+                </select>
+              </div>
+
+              {/* Parameter 3: Dietary Patterns */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">🥗 Alternate Diet Choice</label>
+                <select
+                  value={simDietType}
+                  onChange={(e) => setSimDietType(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition-all"
+                >
+                  <option value="heavy-meat">Frequent Meat</option>
+                  <option value="medium-meat">Balanced Mix</option>
+                  <option value="low-meat">Low Meat / Flexi</option>
+                  <option value="vegetarian">Vegetarian</option>
+                  <option value="vegan">Vegan (100% Plant)</option>
+                </select>
+              </div>
+
+              {/* Parameter 4: Renewable Grid Supplies */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">⚡ Home Tariff Source</label>
+                <select
+                  value={simCleanEnergy}
+                  onChange={(e) => setSimCleanEnergy(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition-all"
+                >
+                  <option value="standard">Standard Grid</option>
+                  <option value="mixed">Mixed Solar/Wind</option>
+                  <option value="solar">100% Solar Tariff</option>
+                </select>
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Feedback Outputs Display Segment */}
+          <div className="bg-slate-900 text-white rounded-2xl p-5 border border-slate-800 flex flex-col justify-between hover:shadow-lg transition-all">
+            <div>
+              <span className="text-[10px] font-mono font-bold uppercase text-slate-400">Sandbox Predictions</span>
+              
+              {/* Score visual comparison */}
+              <div className="mt-3">
+                <div className="text-3xl font-extrabold font-mono text-emerald-400">
+                  {simulatedTotal.toLocaleString()} <span className="text-xs font-sans font-bold text-slate-300 font-semibold text-white">kg/yr</span>
+                </div>
+                <div className="text-xs text-slate-400 mt-1 leading-normal flex items-center flex-wrap gap-1.5">
+                  Proposed carbon score
+                  {simulatedSavings > 0 ? (
+                    <span className="text-[10px] font-bold font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                      -{simulatedSavings.toLocaleString()} kg delta
+                    </span>
+                  ) : simulatedTotal > footprint.total ? (
+                    <span className="text-[10px] font-bold font-mono text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded">
+                      +{Math.abs(footprint.total - simulatedTotal).toLocaleString()} kg delta
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold font-mono text-slate-400 bg-slate-500/10 px-1.5 py-0.5 rounded">
+                      No change
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Benchmark compare note */}
+              <div className="border-t border-slate-850 pt-4 mt-4 text-xs space-y-2">
+                <div className="flex justify-between font-semibold">
+                  <span className="text-slate-400">Paris target boundary:</span>
+                  <span className="text-slate-300">2,000 kg</span>
+                </div>
+                {simulatedTotal <= 2000 ? (
+                  <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-[11px] text-emerald-300 font-medium">
+                    🌟 **Excellent:** This combination completely aligns your footprint with dynamic global limits to curb warming!
+                  </div>
+                ) : (
+                  <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-[11px] text-amber-300 font-medium">
+                    💡 **Tip:** Shift more options above to solar power or meat-less choice to achieve the 2,000 kg targets.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Persistence button */}
+            <button
+              type="button"
+              onClick={handleApplySimulatedParameters}
+              className="w-full mt-4 bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2.5 rounded-xl text-xs transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-emerald-400"
+            >
+              Apply Sandbox Options to Profile
+            </button>
+          </div>
+
+        </div>
+      </section>
 
       {/* Weekly Sustainability Challenges */}
       <section className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sm:p-8" aria-labelledby="challenges-title">
@@ -517,8 +752,11 @@ export default function Dashboard({
         )}
       </section>
 
+      {/* Calculation Sources and specific report version indices displayed in the footer area */}
+      <CalculationSources />
+
       {/* Sources and Scientific Methodology Dialog overlay */}
-      <SourcesModal isOpen={isSourcesModalOpen} onClose={() => setIsSourcesModalOpen(false)} />
+      <MethodologyModal isOpen={isMethodologyModalOpen} onClose={() => setIsMethodologyModalOpen(false)} />
 
     </div>
   );

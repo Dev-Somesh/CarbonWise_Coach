@@ -41,3 +41,16 @@
   animation: shake 0.25s ease-in-out;
 }
 
+@keyframes shakeSlideUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  50% { opacity: 1; transform: translateY(0) translateX(0); }
+  62% { transform: translateX(-6px); }
+  75% { transform: translateX(5px); }
+  87% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+.animate-shake-modal {
+  animation: shakeSlideUp 0.6s ease-out forwards;
+}
+

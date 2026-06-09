@@ -402,6 +402,10 @@ export default function App() {
             onAddHistoryLog={handleAddHistoryLog}
             onClearHistory={handleClearHistory}
             onNavigateToCoach={() => setPage('coach')}
+            onUpdateProfile={(updatedProfile: UserProfile) => {
+              setProfile(updatedProfile);
+              saveStateToStorage(updatedProfile, challenges, actions, history);
+            }}
           />
         )}
 
@@ -470,7 +474,7 @@ export default function App() {
       {/* Custom Reset Confirmation Modal */}
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-905/60 backdrop-blur-xs animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden animate-slide-up">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden animate-shake-modal">
             
             {/* Modal Body */}
             <div className="p-6 sm:p-8 space-y-5 text-center">
