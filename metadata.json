@@ -1,0 +1,6 @@
+{
+  "name": "CarbonWise Coach",
+  "description": "An interactive sustainability assistant and carbon tracking dashboard powered by Gemini AI to measure, understand, and reduce your carbon footprint.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
