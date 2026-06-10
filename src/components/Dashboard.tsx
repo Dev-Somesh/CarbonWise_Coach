@@ -8,10 +8,14 @@ import {
   calculateShoppingEmissions
 } from '../utils/carbonCalculator';
 import { GLOBAL_BENCHMARKS } from '../utils/presets';
-import { Leaf, Calendar, Share2, Plus, TrendingDown, Sparkles, AlertCircle, Trash2, CheckCircle2, HelpCircle } from 'lucide-react';
+import { Leaf, Calendar, Share2, Plus, TrendingDown, Sparkles, AlertCircle, Trash2, CheckCircle2, HelpCircle, Zap, RotateCw, Award, FileText } from 'lucide-react';
+import { generateCarbonReport } from '../utils/pdfGenerator';
+import Achievements from './Achievements';
+import PeerComparison from './PeerComparison';
 import MethodologyModal from './MethodologyModal';
 import CalculationSources from './CalculationSources';
 import CarbonFootprintArt from './CarbonFootprintArt';
+import DashboardWidget from './DashboardWidget';
 
 interface DashboardProps {
   profile: UserProfile;
@@ -40,6 +44,46 @@ export default function Dashboard({
   const [successToast, setSuccessToast] = useState('');
   const [isMethodologyModalOpen, setIsMethodologyModalOpen] = useState(false);
   const [scoreViewMode, setScoreViewMode] = useState<'gauge' | 'footprint'>('footprint');
+
+  // Quick Win logic
+  // Map of static quick wins based on category
+  const QUICK_WIN_TIPS: Record<string, { title: string; description: string; actionText: string }[]> = {
+    transport: [
+      { title: 'Drive 5 km Less Weekly', description: 'Swap one vehicle journey under 5 km with walking or a bike ride per week. Short commutes are prime for carbon offsets.', actionText: 'Swapped transit' },
+      { title: 'Optimize Tire Inflation', description: 'Properly inflated tires decrease rolling friction with tarmac, boosting standard fuel mileage by up to 3.3%.', actionText: 'Inflated tires correctly' },
+      { title: 'Combine Errands Multi-Trips', description: 'Run all your weekend errands in a single round-trip instead of multiple individual drives to save fuel.', actionText: 'Processed single route' },
+    ],
+    diet: [
+      { title: 'Practice "Meatless Monday"', description: 'Skipping beef or lamb for 24 hours eliminates up to 8 kg of individual carbon emissions equivalents.', actionText: 'Subbed vegan plate' },
+      { title: 'Repurpose Leftover Scraps', description: 'Create a scrap broth or freeze raw ingredients before they rot in central landfills generating methane.', actionText: 'Prepped leftover scrap' },
+      { title: 'Prioritize Regional Sourcing', description: 'Acquire your seasonal greens from regional co-ops to sidestep global cargo aviation footprints.', actionText: 'Supported local co-op' },
+    ],
+    energy: [
+      { title: 'Adjust Home Thermostat by 1°C', description: 'Lowering winter heating or raising summer air cooling bounds by 1°C reduces utility grid load by nearly 10%.', actionText: 'Adjusted dial' },
+      { title: 'Unplug "Vampire" Electronics', description: 'Shut down major gaming rigs, chargers, and television accessories from their physical sockets overnight.', actionText: 'Killed phantom draws' },
+      { title: 'Dial Laundry Temperature to 30°C', description: 'Warming water occupies 90% of a laundry machine load resource consumption. Washing cold saves ample grid juice.', actionText: 'Set laundry run cold' },
+    ],
+    shopping: [
+      { title: 'Enforce a 48-Hour Cart Hold', description: 'Hold spec apparel retail shopping in draft for 48 hours to avoid low-utilization fast fashion waste.', actionText: 'Held cart items' },
+      { title: 'Extend Device Maintenance Cycle', description: 'Clean computer vents, clear junk files, and purchase screen protectors to prolong current electronics life.', actionText: 'Extended laptop life' },
+      { title: 'Bring a Durable Canvas Tote', description: 'Conceal folded cotton canvas carriers inside your commute backpack pocket to safely decline synthetic store plastic.', actionText: 'Supplied own carrier' },
+    ],
+  };
+
+  const [quickWinIndex, setQuickWinIndex] = useState(0);
+  const [hasCompletedQuickWin, setHasCompletedQuickWin] = useState(false);
+
+  // Download carbon history as a JSON file
+  const handleDownloadJSON = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(history, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `carbon_wise_coach_history_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    triggerToast('Carbon footprint history database exported and downloaded as JSON successfully!');
+  };
 
   // Sandbox State variables initialized dynamically based on real profile values
   const [simTransportDistance, setSimTransportDistance] = useState<number>(profile.transport.distance);
@@ -100,6 +144,30 @@ export default function Dashboard({
   // Multiplier relative to 1.5C climate target
   const targetMultiplier = (footprint.total / GLOBAL_BENCHMARKS.target).toFixed(1);
 
+  // Determine primary footprint category based on largest emissions source
+  const breakdownCategories = [
+    { key: 'transport', label: 'Transportation', value: footprint.transport, colorText: 'text-sky-600', colorBg: 'bg-sky-50', border: 'border-sky-200/60' },
+    { key: 'diet', label: 'Diet & Food', value: footprint.diet, colorText: 'text-amber-600', colorBg: 'bg-amber-50', border: 'border-amber-250/50' },
+    { key: 'energy', label: 'Home Utilities', value: footprint.energy, colorText: 'text-emerald-600', colorBg: 'bg-emerald-50', border: 'border-emerald-200/60' },
+    { key: 'shopping', label: 'Shopping & Retail', value: footprint.shopping, colorText: 'text-indigo-600', colorBg: 'bg-indigo-50', border: 'border-indigo-200/60' },
+  ];
+  
+  const sortedBreakdown = [...breakdownCategories].sort((a, b) => b.value - a.value);
+  const primaryCategory = sortedBreakdown[0] || breakdownCategories[0];
+
+  const activeCategoryTips = QUICK_WIN_TIPS[primaryCategory.key] || QUICK_WIN_TIPS.energy;
+  const activeTip = activeCategoryTips[quickWinIndex % activeCategoryTips.length];
+
+  const handleCompleteQuickWin = () => {
+    setHasCompletedQuickWin(true);
+    triggerToast(`Victory! Daily Quick Win completed: "${activeTip.title}". Boosted your daily sustainable streak!`);
+  };
+
+  const handleShuffleTip = () => {
+    setQuickWinIndex(prev => prev + 1);
+    setHasCompletedQuickWin(false);
+  };
+
   // Generate a list of days for tracking weekly challenges (Monday to Sunday)
   const currentWeekDays = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
@@ -138,6 +206,16 @@ export default function Dashboard({
     setTimeout(() => setSuccessToast(''), 4000);
   };
 
+  const handleGeneratePDFReport = () => {
+    try {
+      generateCarbonReport({ profile, footprint, challenges, history });
+      triggerToast('Custom PDF Carbon Journey Report compiling complete. Initiating download!');
+    } catch (err) {
+      console.error(err);
+      triggerToast('Encountered an issue compiling PDF document. Please retry.');
+    }
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 animate-fade-in space-y-10">
       
@@ -171,6 +249,16 @@ export default function Dashboard({
           </button>
 
           <button
+            id="btn-download-pdf-report"
+            type="button"
+            onClick={handleGeneratePDFReport}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs sm:text-sm font-semibold rounded-xl shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer transition-all"
+          >
+            <FileText className="w-4 h-4 text-blue-600" />
+            PDF Report
+          </button>
+
+          <button
             onClick={triggerSimulation}
             disabled={isSimulating}
             className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white text-xs sm:text-sm font-semibold rounded-xl shadow cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
@@ -187,6 +275,67 @@ export default function Dashboard({
             aria-label="Export scorecard"
           >
             <Share2 className="w-4.5 h-4.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Daily Quick Win Widget Block */}
+      <div 
+        id="daily-quick-win-card"
+        className="relative bg-slate-900 border border-slate-800 text-white rounded-3xl p-6 sm:p-8 overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-md transition-all duration-300"
+      >
+        {/* Subtle background dynamic glow reflecting targeted category */}
+        <div className="absolute right-0 top-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="flex items-start gap-4 z-10 w-full md:max-w-[70%]">
+          <div className="p-3 bg-slate-800/80 border border-slate-750 text-emerald-400 rounded-2xl shrink-0 mt-0.5 shadow">
+            <Zap className="w-5 h-5 animate-pulse text-yellow-400" />
+          </div>
+          <div className="space-y-1 w-full">
+            <div className="flex gap-2 items-center flex-wrap">
+              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+                Daily Sustainability Quick Win
+              </span>
+              <span className="text-[9px] bg-emerald-950 border border-emerald-800/60 font-semibold text-emerald-400 px-2 py-0.5 rounded-md uppercase tracking-wide">
+                Primary Contributor: {primaryCategory.label}
+              </span>
+            </div>
+            
+            <h3 className="text-base sm:text-lg font-black text-white hover:text-emerald-300 transition-colors">
+              {activeTip.title}
+            </h3>
+            
+            <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
+              {activeTip.description}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto z-10 shrink-0">
+          {hasCompletedQuickWin ? (
+            <div className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 rounded-xl text-xs font-bold w-full md:w-auto justify-center animate-fade-in">
+              <Award className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Win Completed! (+50 pts)</span>
+            </div>
+          ) : (
+            <button
+              id="btn-complete-quick-win"
+              type="button"
+              onClick={handleCompleteQuickWin}
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow-md hover:shadow-emerald-600/10 cursor-pointer transition-all flex items-center justify-center gap-1.5 w-full md:w-auto hover:-translate-y-0.5 active:translate-y-0 outline-none"
+            >
+              <span>Done, Check Off</span>
+            </button>
+          )}
+
+          <button
+            id="btn-shuffle-quick-win"
+            type="button"
+            onClick={handleShuffleTip}
+            className="p-2.5 bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl border border-slate-750/80 shadow-xs focus:outline-none cursor-pointer transition-all focus:ring-1 focus:ring-slate-700"
+            title="Suggest another quick win match"
+          >
+            <RotateCw className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -396,6 +545,17 @@ export default function Dashboard({
           </div>
         </div>
 
+      </div>
+
+      {/* Comparative Data and Milestone Achievements Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8" id="sustainability-milestones-grid">
+        <PeerComparison footprint={footprint} />
+        <Achievements 
+          profile={profile} 
+          footprint={footprint} 
+          challenges={challenges} 
+          history={history} 
+        />
       </div>
 
       {/* "What-If" Dynamic Carbon Sandbox Simulator */}
@@ -670,50 +830,12 @@ export default function Dashboard({
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* Visual Bar Columns */}
-            <div className="lg:col-span-2 p-5 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-700 mb-6">Emissions Trend Curve (kg CO2e/yr)</h3>
-                
-                {/* Custom Graph */}
-                <div className="w-full flex items-end justify-between gap-4 h-48 pb-2 px-4" role="img" aria-label="Emissions trend graph">
-                  {history.map((item, idx) => {
-                    const maxEmissionVal = 15000;
-                    const fillPct = Math.min(100, (item.emissions.total / maxEmissionVal) * 100);
-                    return (
-                      <div key={idx} className="flex-1 flex flex-col items-center group">
-                        {/* Hover card value */}
-                        <span className="text-[10px] font-mono font-bold text-slate-700 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity mb-2">
-                          {item.emissions.total.toLocaleString()} kg
-                        </span>
-                        
-                        {/* Segment Column */}
-                        <div className="w-full bg-slate-200/50 group-hover:bg-slate-200 rounded-lg h-32 flex items-end overflow-hidden transition-all border border-slate-200/10">
-                          <div
-                            className={`w-full ${
-                              idx === history.length - 1 ? 'bg-emerald-500' : 'bg-teal-400'
-                            } rounded-b transition-all duration-1000 ease-out`}
-                            style={{ height: `${fillPct}%` }}
-                          />
-                        </div>
-                        
-                        <span className="text-[10px] font-bold font-mono text-slate-400 mt-2">
-                          {item.date}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center text-[10px] text-slate-400 font-semibold border-t border-slate-200/60 pt-4 mt-2 px-1">
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 bg-teal-400 rounded-sm" /> Historical Logs
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 bg-emerald-500 rounded-sm" /> Latest Point
-                </span>
-              </div>
+            {/* Visual Recharts Area Trendline Analysis */}
+            <div className="lg:col-span-2">
+              <DashboardWidget 
+                history={history} 
+                onDownloadJSON={handleDownloadJSON} 
+              />
             </div>
 
             {/* Logs List widget */}

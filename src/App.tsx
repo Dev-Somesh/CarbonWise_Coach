@@ -15,7 +15,7 @@ import Dashboard from './components/Dashboard';
 import SmartCoach from './components/SmartCoach';
 import TestSuiteRunner from './components/TestSuiteRunner';
 
-import { Leaf, GraduationCap, BarChart3, HelpCircle, RefreshCw, Terminal, CheckCircle2, ExternalLink, AlertCircle, Trash2 } from 'lucide-react';
+import { Leaf, GraduationCap, BarChart3, HelpCircle, RefreshCw, Terminal, CheckCircle2, ExternalLink, AlertCircle, Trash2, Mail, Globe, Linkedin, Github, Sparkles, Footprints } from 'lucide-react';
 
 export default function App() {
   const [page, setPage] = useState<'landing' | 'onboarding' | 'dashboard' | 'coach' | 'tests'>('landing');
@@ -263,18 +263,18 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between antialiased">
       
       {/* Top Navigation Bar */}
-      <nav className="bg-white border-b border-slate-200/80 sticky top-0 z-40 shadow-sm" aria-label="Main Navigation">
+      <nav className="bg-white/95 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-40 shadow-xs" aria-label="Main Navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             
             {/* Logo area */}
             <button
               onClick={() => setPage(profile.hasCompletedOnboarding ? 'dashboard' : 'landing')}
-              className="flex items-center gap-2.5 outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg py-1 px-2 cursor-pointer border-none bg-transparent"
+              className="flex items-center gap-2.5 outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl py-1.5 px-2.5 cursor-pointer border-none bg-transparent hover:bg-slate-50/80 transition-all"
               aria-label="CarbonWise Coach Home"
             >
-              <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/10">
-                <Leaf className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/15">
+                <Footprints className="w-5 h-5 animate-pulse" />
               </div>
               <span className="text-lg font-bold tracking-tight text-slate-900 flex items-center gap-1">
                 CarbonWise <span className="text-emerald-600 font-extrabold">Coach</span>
@@ -283,44 +283,47 @@ export default function App() {
 
             {/* Menu Options - Only visible after completing Onboarding */}
             {profile.hasCompletedOnboarding && (
-              <div className="hidden sm:flex items-center gap-2" role="tablist" aria-label="Dashboard views">
+              <div className="hidden sm:flex items-center gap-1.5" role="tablist" aria-label="Dashboard views">
                 
                 <button
                   onClick={() => setPage('dashboard')}
-                  className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer ${
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer flex items-center gap-1.5 ${
                     page === 'dashboard'
                       ? 'bg-emerald-50 text-emerald-800'
-                      : 'text-slate-600 hover:text-slate-900'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50'
                   }`}
                   role="tab"
                   aria-selected={page === 'dashboard'}
                 >
+                  <BarChart3 className="w-4 h-4 text-emerald-600" />
                   Dashboard
                 </button>
 
                 <button
                   onClick={() => setPage('coach')}
-                  className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer ${
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer flex items-center gap-1.5 ${
                     page === 'coach'
                       ? 'bg-emerald-50 text-emerald-800'
-                      : 'text-slate-600 hover:text-slate-900'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50'
                   }`}
                   role="tab"
                   aria-selected={page === 'coach'}
                 >
+                  <Sparkles className="w-4 h-4 text-emerald-600" />
                   Smart Coach
                 </button>
 
                 <button
                   onClick={() => setPage('tests')}
-                  className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer ${
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer flex items-center gap-1.5 ${
                     page === 'tests'
                       ? 'bg-emerald-50 text-emerald-800'
-                      : 'text-slate-600 hover:text-slate-900'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50'
                   }`}
                   role="tab"
                   aria-selected={page === 'tests'}
                 >
+                  <Terminal className="w-4 h-4 text-emerald-600" />
                   Test Runner
                 </button>
 
@@ -332,17 +335,18 @@ export default function App() {
               {profile.hasCompletedOnboarding ? (
                 <button
                   onClick={handleRestartAssessment}
-                  className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-800 rounded-lg text-xs font-semibold border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer"
+                  className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-bold border border-slate-250 shadow-xs focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer transition-all"
                   aria-label="Reset and restart assessment"
                 >
-                  Restart
+                  Restart Hub
                 </button>
               ) : (
                 <button
                   onClick={() => setPage('tests')}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-colors focus:outline-none cursor-pointer"
+                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all focus:outline-none cursor-pointer flex items-center gap-1.5 hover:shadow-xs"
                   aria-label="View functional test runner panel"
                 >
+                  <Terminal className="w-3.5 h-3.5 text-slate-500" />
                   Run Tests
                 </button>
               )}
@@ -356,20 +360,23 @@ export default function App() {
           <div className="sm:hidden border-t border-slate-100 bg-white grid grid-cols-3 divide-x divide-slate-100 text-center text-xs font-bold leading-normal">
             <button
               onClick={() => setPage('dashboard')}
-              className={`py-3 ${page === 'dashboard' ? 'text-emerald-600 bg-slate-50' : 'text-slate-500 bg-transparent'}`}
+              className={`py-3 flex items-center justify-center gap-1.5 ${page === 'dashboard' ? 'text-emerald-700 bg-emerald-50/50' : 'text-slate-500 bg-transparent'}`}
             >
+              <BarChart3 className="w-3.5 h-3.5" />
               Dashboard
             </button>
             <button
               onClick={() => setPage('coach')}
-              className={`py-3 ${page === 'coach' ? 'text-emerald-600 bg-slate-50' : 'text-slate-500 bg-transparent'}`}
+              className={`py-3 flex items-center justify-center gap-1.5 ${page === 'coach' ? 'text-emerald-700 bg-emerald-50/50' : 'text-slate-500 bg-transparent'}`}
             >
+              <Sparkles className="w-3.5 h-3.5" />
               Smart Coach
             </button>
             <button
               onClick={() => setPage('tests')}
-              className={`py-3 ${page === 'tests' ? 'text-emerald-600 bg-slate-50' : 'text-slate-500 bg-transparent'}`}
+              className={`py-3 flex items-center justify-center gap-1.5 ${page === 'tests' ? 'text-emerald-700 bg-emerald-50/50' : 'text-slate-500 bg-transparent'}`}
             >
+              <Terminal className="w-3.5 h-3.5" />
               Test Runner
             </button>
           </div>
@@ -424,16 +431,28 @@ export default function App() {
       </main>
 
       {/* Footer Branding Area */}
-      <footer className="bg-white border-t border-slate-200/80 py-6 text-center text-xs text-slate-400 font-medium font-mono">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-left">
-            <span className="font-semibold text-slate-700">CarbonWise Coach</span>
-            <span className="hidden sm:inline text-slate-200">|</span>
-            <span className="text-slate-500">CarbonTrace &mdash; built for awareness, not perfection.</span>
+      <footer className="bg-white border-t border-slate-200/80 py-8 text-xs text-slate-500 font-medium font-sans">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-6">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+              <span className="font-extrabold text-slate-800 text-sm tracking-tight flex items-center gap-1.5 justify-center sm:justify-start">
+                <Footprints className="w-4 h-4 text-emerald-500 animate-bounce" />
+                CarbonWise Coach
+              </span>
+              <span className="hidden sm:inline text-slate-200">|</span>
+              <span className="text-slate-400 font-medium">Built for carbon awareness, accountability, and environmental action.</span>
+            </div>
+            
+            <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50/50 px-3 py-1 rounded-full text-[11px] font-bold border border-emerald-100/40">
+              <Footprints className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
+              100% Client-Side Encryption
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 md:text-right">
-            <span>
-              Emission factors from{' '}
+
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 text-slate-400 text-center lg:text-left text-[11px]">
+            <p className="max-w-2xl leading-relaxed lg:text-left text-center">
+              Emission values are meticulously synthesized from the{' '}
               <a 
                 href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator" 
                 target="_blank" 
@@ -451,7 +470,7 @@ export default function App() {
                 title="Intergovernmental Panel on Climate Change (AR6 WGIII)"
               >
                 IPCC AR6 <ExternalLink className="w-2.5 h-2.5" />
-              </a>, and{' '}
+              </a>, and the{' '}
               <a 
                 href="https://www.iea.org/reports/global-energy-review-co2-emissions-in-2023" 
                 target="_blank" 
@@ -459,15 +478,66 @@ export default function App() {
                 className="text-emerald-600 hover:text-emerald-700 font-semibold underline inline-flex items-center gap-0.5"
                 title="International Energy Agency"
               >
-                IEA 2023 <ExternalLink className="w-2.5 h-2.5" />
+                IEA 2023 Global report <ExternalLink className="w-2.5 h-2.5" />
               </a>.
-            </span>
-            <span className="hidden sm:inline text-slate-200">|</span>
-            <span className="flex items-center gap-1 text-emerald-600">
-              <Leaf className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
-              100% Client-Side Encryption
-            </span>
+            </p>
+
+            {/* Developer Section */}
+            <div className="p-3 px-4 bg-slate-50 border border-slate-150 rounded-2xl flex flex-col sm:flex-row items-center gap-3.5 shadow-2xs">
+              <div className="text-center sm:text-left font-sans">
+                <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 leading-none mb-1">Project Architect</p>
+                <p className="text-xs font-bold text-slate-800 leading-none">Somesh Bhardwaj</p>
+              </div>
+              <div className="hidden sm:block h-6 w-px bg-slate-200" />
+              <div className="text-center sm:text-left font-sans">
+                <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 leading-none mb-1">Client Authorization</p>
+                <p className="text-xs font-bold text-emerald-700 leading-none font-mono">itdeveloper06@gmail.com</p>
+              </div>
+              <div className="hidden sm:block h-6 w-px bg-slate-200" />
+              <div className="flex items-center gap-2.5 flex-wrap justify-center">
+                <a
+                  href="mailto:hello@someshbhardwaj.dev"
+                  className="p-1.5 bg-white hover:bg-slate-100 text-slate-650 hover:text-emerald-600 rounded-xl border border-slate-200/80 transition-colors shadow-3xs flex items-center gap-1 text-[11px] font-bold"
+                  title="Send Email"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Email</span>
+                </a>
+                <a
+                  href="https://someshbhardwaj.dev"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-1.5 bg-white hover:bg-slate-100 text-slate-650 hover:text-emerald-600 rounded-xl border border-slate-200/80 transition-colors shadow-3xs flex items-center gap-1 text-[11px] font-bold"
+                  title="Visit Website"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>Web</span>
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/ersomeshbhardwaj/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-1.5 bg-white hover:bg-slate-100 text-slate-65 * hover:text-blue-600 rounded-xl border border-slate-200/80 transition-colors shadow-3xs flex items-center gap-1 text-[11px] font-bold"
+                  title="LinkedIn Profile"
+                >
+                  <Linkedin className="w-3.5 h-3.5 text-blue-600" />
+                  <span>LinkedIn</span>
+                </a>
+                <a
+                  href="http://github.com/Dev-Somesh"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-1.5 bg-white hover:bg-slate-100 text-slate-650 hover:text-slate-900 rounded-xl border border-slate-200/80 transition-colors shadow-3xs flex items-center gap-1 text-[11px] font-bold"
+                  title="GitHub Portfolio"
+                >
+                  <Github className="w-3.5 h-3.5 text-slate-800" />
+                  <span>GitHub</span>
+                </a>
+              </div>
+            </div>
+
           </div>
+
         </div>
       </footer>
 
