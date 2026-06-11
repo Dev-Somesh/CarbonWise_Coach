@@ -1,5 +1,6 @@
-import React from 'react';
-import { X, Globe, FileText, BarChart3, HelpCircle, Check, Info } from 'lucide-react';
+import React, { useRef } from 'react';
+import { X, BarChart3, Check, Info } from 'lucide-react';
+import { useModalA11y } from '../hooks/useModalA11y';
 
 interface MethodologyModalProps {
   isOpen: boolean;
@@ -7,6 +8,9 @@ interface MethodologyModalProps {
 }
 
 export default function MethodologyModal({ isOpen, onClose }: MethodologyModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  useModalA11y(isOpen, onClose, modalRef);
+
   if (!isOpen) return null;
 
   return (
@@ -17,6 +21,7 @@ export default function MethodologyModal({ isOpen, onClose }: MethodologyModalPr
       aria-labelledby="methodology-modal-title"
     >
       <div 
+        ref={modalRef}
         id="methodology-modal"
         className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-2xl overflow-hidden animate-slide-up flex flex-col max-h-[85vh]"
       >

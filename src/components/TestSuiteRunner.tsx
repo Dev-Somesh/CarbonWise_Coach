@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { calculateTransportEmissions, calculateDietEmissions, calculateEnergyEmissions, calculateShoppingEmissions } from '../utils/carbonCalculator';
 import { generateContextualRecommendations } from '../utils/recommendations';
-import { Play, CheckCircle2, ShieldCheck, Terminal, HelpCircle, Activity } from 'lucide-react';
+import { Play, CheckCircle2, Terminal, Activity } from 'lucide-react';
 
 interface TestCase {
   id: string;
@@ -25,11 +25,11 @@ export default function TestSuiteRunner() {
       category: 'transport',
       run: () => {
         const input = { method: 'petrol' as const, distance: 100, shortFlights: 2, longFlights: 1 };
-        // (100 * 0.18 * 52) + (2 * 150) + (1 * 500) = 936 + 300 + 500 = 1736 kg
+        // (100 * 0.18 * 52) + (2 * 150) + (1 * 600) = 936 + 300 + 600 = 1836 kg
         const result = calculateTransportEmissions(input);
         return {
-          passed: result === 1736,
-          expected: '1,736 kg CO2e / yr',
+          passed: result === 1836,
+          expected: '1,836 kg CO2e / yr',
           actual: `${result.toLocaleString()} kg CO2e / yr`,
           details: `Input: 100km/wk petrol car, 2 short-haul, 1 long-haul flight.`
         };
@@ -133,26 +133,26 @@ export default function TestSuiteRunner() {
 
   const runAllTests = () => {
     setIsRunning(true);
-    setTimeout(() => {
-      setTests(prev =>
-        prev.map(t => {
-          const res = t.run();
-          return {
-            ...t,
-            passed: res.passed,
-            expected: res.expected,
-            actual: res.actual,
-            details: res.details,
-          };
-        })
-      );
-      setIsRunning(false);
-    }, 1000);
+    setTests(prev =>
+      prev.map(t => {
+        const res = t.run();
+        return {
+          ...t,
+          passed: res.passed,
+          expected: res.expected,
+          actual: res.actual,
+          details: res.details,
+        };
+      })
+    );
+    setIsRunning(false);
   };
 
   const totalTests = tests.length;
   const passedTests = tests.filter(t => t.passed === true).length;
   const allRun = tests.every(t => t.passed !== undefined);
+  const allPassed = allRun && passedTests === totalTests;
+  const passRate = allRun ? Math.round((passedTests / totalTests) * 100) : 0;
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8 md:py-12 animate-fade-in space-y-8">
@@ -176,6 +176,7 @@ export default function TestSuiteRunner() {
           <button
             onClick={runAllTests}
             disabled={isRunning}
+            aria-label="Execute all unit tests"
             className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition-all focus:outline-none pointer-events-auto cursor-pointer"
           >
             <Play className={`w-4 h-4 ${isRunning ? 'animate-spin' : ''}`} />
@@ -189,8 +190,12 @@ export default function TestSuiteRunner() {
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               Passed: {passedTests} / {totalTests} assertions
             </span>
-            <span className="text-emerald-400 font-extrabold bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/30">
-              100% SUCCESS
+            <span className={`font-extrabold px-2 py-0.5 rounded border ${
+              allPassed
+                ? 'text-emerald-400 bg-emerald-950/40 border-emerald-900/30'
+                : 'text-amber-400 bg-amber-950/40 border-amber-900/30'
+            }`}>
+              {allPassed ? '100% SUCCESS' : `${passRate}% — ${totalTests - passedTests} FAILED`}
             </span>
           </div>
         )}

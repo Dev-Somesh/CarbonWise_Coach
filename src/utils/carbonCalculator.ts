@@ -14,7 +14,7 @@ export const TRANSPORT_CONSTANTS = {
   transit: 0.04,     // Metro/Bus per km
   active: 0.0,       // Walking/Bicyling
   shortFlight: 150,  // Short-haul flight per year (<3 hours)
-  longFlight: 500,   // Long-haul flight per year (>3 hours)
+  longFlight: 600,   // Long-haul flight per year (>3 hours) — IPCC/EPA aligned
 };
 
 // Diet emission constants (kg CO2e per year base value)

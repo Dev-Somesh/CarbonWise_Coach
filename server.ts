@@ -1,15 +1,37 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
+import {
+  parseCoachInsights,
+  parseCoachChat,
+  extractLatestUserMessage,
+  type CoachInsightsInput,
+} from "./src/utils/apiValidation";
 
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.NODE_ENV === "production" ? "127.0.0.1" : "0.0.0.0";
 
-app.use(express.json());
+app.use(
+  helmet({
+    contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false,
+  })
+);
+app.use(express.json({ limit: "32kb" }));
+
+const aiRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many AI requests. Please try again later." },
+});
 
 // Initialize Google GenAI client lazily or safely
 let ai: GoogleGenAI | null = null;
@@ -37,9 +59,15 @@ if (apiKey && apiKey !== "MY_GEMINI_API_KEY" && apiKey.trim() !== "") {
  * API Route: /api/coach-insights
  * Uses Gemini or falling back to deterministic advice to generate sustainable coaching feedback.
  */
-app.post("/api/coach-insights", async (req, res) => {
+app.post("/api/coach-insights", aiRateLimiter, async (req, res) => {
   try {
-    const { name, transport, diet, energy, shopping, totalEmissions, profileRaw } = req.body;
+    const parsedBody = parseCoachInsights(req.body);
+    if (!parsedBody.success) {
+      return res.status(400).json({ error: "Invalid request payload." });
+    }
+
+    const { name, transport, diet, energy, shopping, totalEmissions, profileRaw } =
+      parsedBody.data as CoachInsightsInput;
 
     // --- Elegant dynamic rules-based fallback engine ---
     const user_name = name || "Eco Friend";
@@ -89,7 +117,7 @@ app.post("/api/coach-insights", async (req, res) => {
       recommendationsPool.push("Switch high-fuel fossil vehicle commutes to active cycling, rail, or electric carpooling to save ~850 kg CO2e.");
     }
     if (Number(profileRaw?.transport?.shortFlights) > 0) {
-      recommendationsPool.push(`Replace short domestic flight legs (${profileRaw.transport.shortFlights} per year) with train journeys or virtual video conferencing to save ~300 kg CO2e.`);
+      recommendationsPool.push(`Replace short domestic flight legs (${profileRaw?.transport?.shortFlights ?? 0} per year) with train journeys or virtual video conferencing to save ~300 kg CO2e.`);
     }
 
     // Diet specific
@@ -157,16 +185,15 @@ app.post("/api/coach-insights", async (req, res) => {
       - recommendations: A list of exactly 3 highly specific, highly actionable recommendations they can do (incorporating details from their real answers, e.g., using their specific commute method or heating appliances if applicable) detailing exactly how much carbon they can save.
     `;
 
-    let parsed: any = null;
+    let parsed: { headline: string; analysis: string; recommendations: string[] } | null = null;
     let isAiGenerated = false;
-    let isFallbackActive = false;
     let fallbackReason = "";
     const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     if (ai) {
       const modelsToTry = ["gemini-3.1-flash-lite", "gemini-3.5-flash"];
       let success = false;
-      let lastError: any = null;
+      let lastError: unknown = null;
 
       for (const modelName of modelsToTry) {
         if (success) break;
@@ -205,12 +232,11 @@ app.post("/api/coach-insights", async (req, res) => {
               console.log(`Successfully generated advice using ${modelName} on attempt ${attempt}`);
               break;
             }
-          } catch (apiError: any) {
-            // Calm logging to prevent the test suite framework from parsing this expected rate-limit as a hard system error
-            console.log(`[Status] Gemini request to ${modelName} transitioned to fallback status:`, apiError?.message || apiError);
+          } catch (apiError: unknown) {
+            const errorMessage =
+              apiError instanceof Error ? apiError.message.toLowerCase() : String(apiError).toLowerCase();
+            console.log(`[Status] Gemini request to ${modelName} transitioned to fallback status:`, errorMessage);
             lastError = apiError;
-
-            const errorMessage = (apiError?.message || "").toLowerCase();
             const isTemporary = errorMessage.includes("503") || 
                                 errorMessage.includes("demand") || 
                                 errorMessage.includes("unavailable") || 
@@ -230,11 +256,12 @@ app.post("/api/coach-insights", async (req, res) => {
       }
 
       if (!success) {
-        isFallbackActive = true;
-        fallbackReason = lastError?.message || "All models returned temporary errors or reached quota capacity.";
+        fallbackReason =
+          lastError instanceof Error
+            ? lastError.message
+            : "All models returned temporary errors or reached quota capacity.";
       }
     } else {
-      isFallbackActive = true;
       fallbackReason = "Google GenAI Client is not initialized due to missing GEMINI_API_KEY.";
     }
 
@@ -262,17 +289,19 @@ app.post("/api/coach-insights", async (req, res) => {
  * API Route: /api/coach-chat
  * Supports dynamic conversation with CarbonWise Coach, falling back safely when no API Key is enabled.
  */
-app.post("/api/coach-chat", async (req, res) => {
+app.post("/api/coach-chat", aiRateLimiter, async (req, res) => {
   try {
-    const { messages, profileRaw } = req.body;
-    
-    // Check if we have active messages
-    if (!messages || messages.length === 0) {
-      return res.status(400).json({ error: "No messages provided in the payload." });
+    const parsedBody = parseCoachChat(req.body);
+    if (!parsedBody.success) {
+      return res.status(400).json({ error: "Invalid request payload." });
     }
 
-    const latestUserMessageObj = messages[messages.length - 1];
-    const latestUserMessage = latestUserMessageObj.parts[0].text;
+    const { messages, profileRaw } = parsedBody.data;
+    const latestUserMessage = extractLatestUserMessage(messages);
+
+    if (!latestUserMessage) {
+      return res.status(400).json({ error: "No valid user message found." });
+    }
 
     // Default dynamic rule-based responses for local fallback mode
     if (!ai) {
@@ -290,7 +319,7 @@ app.post("/api/coach-chat", async (req, res) => {
       } else if (lowerQuery.includes("shopping") || lowerQuery.includes("buy") || lowerQuery.includes("clothes") || lowerQuery.includes("technology") || lowerQuery.includes("waste")) {
         responseText += `🛍️ **Consumer Purchases Advice:** Heavy manufacturing and global courier freight load individual footprints. Extending your cell phone replacement cycle to 4 years instead of 2 cuts resource pressures significantly. Prioritizing vintage wear and local repairs is also a high-impact choice.`;
       } else {
-        responseText += `💡 **General Sustainability Tip:** The primary route to sustainability is systemic, starting with personal measurement and incremental habits. Your current profile has a total calculated rating of ${profileRaw?.transport?.distance * 5 || "moderate"} units. Start tracking small daily task actions to drive steady improvements.`;
+        responseText += `💡 **General Sustainability Tip:** The primary route to sustainability is systemic, starting with personal measurement and incremental habits. Your current profile has a total calculated rating of ${(profileRaw?.transport?.distance ?? 0) * 5 || "moderate"} units. Start tracking small daily task actions to drive steady improvements.`;
       }
 
       return res.json({
@@ -302,9 +331,9 @@ app.post("/api/coach-chat", async (req, res) => {
 
     // Prepare message history formatted according to Google GenAI expectations
     // Schema: [{ role: "user" | "model", parts: [{ text: "..." }] }]
-    const formattedContents = messages.map((m: any) => ({
+    const formattedContents = messages.map((m) => ({
       role: m.role === "assistant" ? "model" : m.role,
-      parts: m.parts.map((p: any) => ({ text: p.text }))
+      parts: m.parts.map((p) => ({ text: p.text })),
     }));
 
     // Inject system instructions and user context
@@ -343,7 +372,7 @@ app.post("/api/coach-chat", async (req, res) => {
       throw new Error("Gemini returned an empty reply.");
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Coach chat controller failed:", error);
     res.status(500).json({ error: "Internal server error occurred processing conversation." });
   }
@@ -362,13 +391,13 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get("*", (req, res) => {
+    app.get("*", (_req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`CarbonWise Coach Full-Stack Engine booted on http://0.0.0.0:${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`CarbonWise Coach Full-Stack Engine booted on http://${HOST}:${PORT}`);
   });
 }
 

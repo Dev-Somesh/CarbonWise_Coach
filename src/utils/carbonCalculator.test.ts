@@ -18,10 +18,10 @@ describe('Carbon Calculator Calculations', () => {
     };
     
     // Formula: Weekly commute emissions (100 * 0.18 * 52) = 936
-    // Flight emissions: (2 * 150) + (1 * 500) = 800
-    // Total = 1736 kg CO2e
+    // Flight emissions: (2 * 150) + (1 * 600) = 900
+    // Total = 1836 kg CO2e
     const total = calculateTransportEmissions(habits);
-    expect(total).toBe(1736);
+    expect(total).toBe(1836);
   });
 
   it('correctly calculates annual transport emissions for electric vehicle and public transit', () => {
@@ -61,6 +61,16 @@ describe('Carbon Calculator Calculations', () => {
     // total: 700 kg
     const energy = calculateEnergyEmissions(habits);
     expect(energy).toBe(700);
+  });
+
+  it('correctly calculates shopping emissions with recycling discount', () => {
+    const habits = {
+      clothing: 'moderate' as const,
+      electronics: 'none' as const,
+      recycling: 'thorough' as const,
+    };
+    // (400 + 100) * 0.85 = 425
+    expect(calculateShoppingEmissions(habits)).toBe(425);
   });
 
   it('correctly calculates combined carbon footprint', () => {

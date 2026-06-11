@@ -39,7 +39,7 @@ Meticulously calculates baseline green house gas outputs (in kg CO2e) across 4 h
 
 ## Technical Architecture
 
-* **Frontend Framework**: React 18 with Vite
+* **Frontend Framework**: React 19 with Vite
 * **Language**: TypeScript
 * **Styling**: Tailwind CSS
 * **Icons**: Lucide React
@@ -51,11 +51,12 @@ Meticulously calculates baseline green house gas outputs (in kg CO2e) across 4 h
 
 ## Running Locally
 
-To download dependencies and start the local development dev server:
-
 ```bash
 # Install package dependencies
 npm install
+
+# Copy environment template and add your Gemini API key (optional — app falls back to rules engine)
+cp .env.example .env
 
 # Start local dev server (port 3000)
 npm run dev
@@ -66,6 +67,29 @@ npm run build
 # Start production server
 npm run start
 ```
+
+## Quality Assurance
+
+```bash
+# TypeScript type-check
+npm run lint
+
+# Run unit tests (Vitest)
+npm run test
+
+# Run tests with coverage report
+npm run test:coverage
+```
+
+Test coverage includes carbon calculator math, recommendation engine sorting, and API input validation schemas.
+
+## Security
+
+* API keys (`GEMINI_API_KEY`) are server-side only — never exposed to the browser
+* Express `helmet` security headers and `express-rate-limit` on AI endpoints (60 req / 15 min)
+* Zod schema validation on all `/api/*` POST payloads
+* Request body size capped at 32 KB
+* User data stored locally in browser `localStorage` (privacy-first, no server persistence)
 
 ---
 

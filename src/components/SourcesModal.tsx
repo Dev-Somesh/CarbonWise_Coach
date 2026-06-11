@@ -1,5 +1,6 @@
-import React from 'react';
-import { X, ExternalLink, Leaf, HelpCircle, FileText, Globe } from 'lucide-react';
+import React, { useRef } from 'react';
+import { X, ExternalLink, FileText, Globe } from 'lucide-react';
+import { useModalA11y } from '../hooks/useModalA11y';
 
 interface SourcesModalProps {
   isOpen: boolean;
@@ -7,11 +8,14 @@ interface SourcesModalProps {
 }
 
 export default function SourcesModal({ isOpen, onClose }: SourcesModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  useModalA11y(isOpen, onClose, modalRef);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-2xl overflow-hidden animate-slide-up flex flex-col max-h-[85vh]">
+      <div ref={modalRef} className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-2xl overflow-hidden animate-slide-up flex flex-col max-h-[85vh]">
         
         {/* Modal Header */}
         <div className="flex justify-between items-center px-6 py-5 border-b border-slate-100 bg-slate-50/50 shrink-0">

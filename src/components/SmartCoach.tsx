@@ -91,7 +91,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
 
   useEffect(() => {
     fetchSmartCoachAdvice();
-  }, [profile.name]);
+  }, [profile.name, footprint.total, footprint.transport, footprint.diet, footprint.energy, footprint.shopping]);
 
   // Handle send message to AI coach chat
   const handleSendChatMessage = async (e: React.FormEvent) => {
@@ -407,14 +407,17 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Ask and learn (e.g. 'How can I lower my fuel costs?')..."
+                  aria-label="Type your question for the Smart Coach"
+                  maxLength={2000}
                   className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 outline-none placeholder:text-slate-500 focus:border-emerald-500/80 text-sm focus:ring-1 focus:ring-emerald-500/10 transition-all font-medium"
                 />
                 <button
                   type="submit"
                   disabled={chatLoading || !chatInput.trim()}
+                  aria-label="Send message to Smart Coach"
                   className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white shadow-md p-3.5 px-4.5 rounded-xl cursor-pointer flex items-center gap-1.5 transition-colors disabled:cursor-not-allowed outline-none focus:ring-2 focus:ring-emerald-500"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-4 h-4" aria-hidden="true" />
                 </button>
               </form>
 

@@ -3,19 +3,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { UserProfile, CarbonFootprint, WeeklyChallenge, EmissionHistoryItem, SustainabilityAction } from './types';
 import { calculateCarbonFootprint } from './utils/carbonCalculator';
 import { generateContextualRecommendations, getRecommendedChallenges } from './utils/recommendations';
 import { DEFAULT_PROFILE } from './utils/presets';
+import { restoreSessionFromStorage } from './utils/storageValidation';
+import { useModalA11y } from './hooks/useModalA11y';
 
 import Landing from './components/Landing';
 import Onboarding from './components/Onboarding';
-import Dashboard from './components/Dashboard';
-import SmartCoach from './components/SmartCoach';
-import TestSuiteRunner from './components/TestSuiteRunner';
 
-import { Leaf, GraduationCap, BarChart3, HelpCircle, RefreshCw, Terminal, CheckCircle2, ExternalLink, AlertCircle, Trash2, Mail, Globe, Linkedin, Github, Sparkles, Footprints } from 'lucide-react';
+const Dashboard = React.lazy(() => import('./components/Dashboard'));
+const SmartCoach = React.lazy(() => import('./components/SmartCoach'));
+const TestSuiteRunner = React.lazy(() => import('./components/TestSuiteRunner'));
+
+import { BarChart3, Terminal, ExternalLink, AlertCircle, Trash2, Mail, Globe, Linkedin, Github, Sparkles, Footprints, Shield } from 'lucide-react';
+
+const PageLoader = () => (
+  <div className="flex-1 flex items-center justify-center py-24" role="status" aria-label="Loading page content">
+    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 export default function App() {
   const [page, setPage] = useState<'landing' | 'onboarding' | 'dashboard' | 'coach' | 'tests'>('landing');
@@ -32,34 +41,20 @@ export default function App() {
   });
 
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const resetModalRef = useRef<HTMLDivElement>(null);
+  useModalA11y(isResetModalOpen, () => setIsResetModalOpen(false), resetModalRef);
 
-  // 1. Initialise State & Sync with localStorage
+  // 1. Initialise State & Sync with localStorage (validated parsing)
   useEffect(() => {
     try {
-      const storedProfile = localStorage.getItem('cw_user_profile');
-      const storedChallenges = localStorage.getItem('cw_user_challenges');
-      const storedHistory = localStorage.getItem('cw_user_history');
-      const storedActions = localStorage.getItem('cw_user_actions');
+      const session = restoreSessionFromStorage();
+      setProfile(session.profile);
+      setChallenges(session.challenges);
+      setHistory(session.history);
+      setActions(session.actions);
 
-      if (storedProfile) {
-        const parsedProfile: UserProfile = JSON.parse(storedProfile);
-        setProfile(parsedProfile);
-        
-        if (parsedProfile.hasCompletedOnboarding) {
-          setPage('dashboard');
-        }
-      }
-
-      if (storedChallenges) {
-        setChallenges(JSON.parse(storedChallenges));
-      }
-
-      if (storedHistory) {
-        setHistory(JSON.parse(storedHistory));
-      }
-
-      if (storedActions) {
-        setActions(JSON.parse(storedActions));
+      if (session.profile.hasCompletedOnboarding) {
+        setPage('dashboard');
       }
     } catch (err) {
       console.error('Failed to restore dashboard session state:', err);
@@ -103,8 +98,7 @@ export default function App() {
 
   }, [profile, actions]);
 
-  // Save changes to LocalStorage on state update
-  const saveStateToStorage = (
+  const saveStateToStorage = useCallback((
     updatedProfile: UserProfile,
     updatedChallenges: WeeklyChallenge[],
     updatedActions: SustainabilityAction[],
@@ -114,7 +108,7 @@ export default function App() {
     localStorage.setItem('cw_user_challenges', JSON.stringify(updatedChallenges));
     localStorage.setItem('cw_user_actions', JSON.stringify(updatedActions));
     localStorage.setItem('cw_user_history', JSON.stringify(updatedHistory));
-  };
+  }, []);
 
   // 3. User Action Handlers
   const handleStartOnboarding = () => {
@@ -259,9 +253,18 @@ export default function App() {
     setIsResetModalOpen(false);
   };
 
+  const tabIds = { dashboard: 'tab-dashboard', coach: 'tab-coach', tests: 'tab-tests' } as const;
+  const panelIds = { dashboard: 'panel-dashboard', coach: 'panel-coach', tests: 'panel-tests' } as const;
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between antialiased">
-      
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-emerald-600 focus:text-white focus:rounded-lg focus:font-semibold"
+      >
+        Skip to main content
+      </a>
+
       {/* Top Navigation Bar */}
       <nav className="bg-white/95 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-40 shadow-xs" aria-label="Main Navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -286,6 +289,7 @@ export default function App() {
               <div className="hidden sm:flex items-center gap-1.5" role="tablist" aria-label="Dashboard views">
                 
                 <button
+                  id={tabIds.dashboard}
                   onClick={() => setPage('dashboard')}
                   className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer flex items-center gap-1.5 ${
                     page === 'dashboard'
@@ -294,12 +298,14 @@ export default function App() {
                   }`}
                   role="tab"
                   aria-selected={page === 'dashboard'}
+                  aria-controls={panelIds.dashboard}
                 >
-                  <BarChart3 className="w-4 h-4 text-emerald-600" />
+                  <BarChart3 className="w-4 h-4 text-emerald-600" aria-hidden="true" />
                   Dashboard
                 </button>
 
                 <button
+                  id={tabIds.coach}
                   onClick={() => setPage('coach')}
                   className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer flex items-center gap-1.5 ${
                     page === 'coach'
@@ -308,12 +314,14 @@ export default function App() {
                   }`}
                   role="tab"
                   aria-selected={page === 'coach'}
+                  aria-controls={panelIds.coach}
                 >
-                  <Sparkles className="w-4 h-4 text-emerald-600" />
+                  <Sparkles className="w-4 h-4 text-emerald-600" aria-hidden="true" />
                   Smart Coach
                 </button>
 
                 <button
+                  id={tabIds.tests}
                   onClick={() => setPage('tests')}
                   className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer flex items-center gap-1.5 ${
                     page === 'tests'
@@ -322,8 +330,9 @@ export default function App() {
                   }`}
                   role="tab"
                   aria-selected={page === 'tests'}
+                  aria-controls={panelIds.tests}
                 >
-                  <Terminal className="w-4 h-4 text-emerald-600" />
+                  <Terminal className="w-4 h-4 text-emerald-600" aria-hidden="true" />
                   Test Runner
                 </button>
 
@@ -357,26 +366,38 @@ export default function App() {
 
         {/* Small screen navigation drawer links */}
         {profile.hasCompletedOnboarding && (
-          <div className="sm:hidden border-t border-slate-100 bg-white grid grid-cols-3 divide-x divide-slate-100 text-center text-xs font-bold leading-normal">
+          <div className="sm:hidden border-t border-slate-100 bg-white grid grid-cols-3 divide-x divide-slate-100 text-center text-xs font-bold leading-normal" role="tablist" aria-label="Mobile dashboard views">
             <button
               onClick={() => setPage('dashboard')}
               className={`py-3 flex items-center justify-center gap-1.5 ${page === 'dashboard' ? 'text-emerald-700 bg-emerald-50/50' : 'text-slate-500 bg-transparent'}`}
+              role="tab"
+              aria-selected={page === 'dashboard'}
+              aria-controls={panelIds.dashboard}
+              aria-label="Dashboard"
             >
-              <BarChart3 className="w-3.5 h-3.5" />
+              <BarChart3 className="w-3.5 h-3.5" aria-hidden="true" />
               Dashboard
             </button>
             <button
               onClick={() => setPage('coach')}
               className={`py-3 flex items-center justify-center gap-1.5 ${page === 'coach' ? 'text-emerald-700 bg-emerald-50/50' : 'text-slate-500 bg-transparent'}`}
+              role="tab"
+              aria-selected={page === 'coach'}
+              aria-controls={panelIds.coach}
+              aria-label="Smart Coach"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
               Smart Coach
             </button>
             <button
               onClick={() => setPage('tests')}
               className={`py-3 flex items-center justify-center gap-1.5 ${page === 'tests' ? 'text-emerald-700 bg-emerald-50/50' : 'text-slate-500 bg-transparent'}`}
+              role="tab"
+              aria-selected={page === 'tests'}
+              aria-controls={panelIds.tests}
+              aria-label="Test Runner"
             >
-              <Terminal className="w-3.5 h-3.5" />
+              <Terminal className="w-3.5 h-3.5" aria-hidden="true" />
               Test Runner
             </button>
           </div>
@@ -384,7 +405,7 @@ export default function App() {
       </nav>
 
       {/* Main Screen Router Box */}
-      <main className="flex-1 w-full flex flex-col justify-start">
+      <main id="main-content" className="flex-1 w-full flex flex-col justify-start" tabIndex={-1}>
         {page === 'landing' && (
           <Landing
             onStartOnboarding={handleStartOnboarding}
@@ -399,35 +420,43 @@ export default function App() {
           />
         )}
 
-        {page === 'dashboard' && profile.hasCompletedOnboarding && (
-          <Dashboard
-            profile={profile}
-            footprint={activeFootprint}
-            challenges={challenges}
-            onToggleChallengeDay={handleToggleChallengeDay}
-            history={history}
-            onAddHistoryLog={handleAddHistoryLog}
-            onClearHistory={handleClearHistory}
-            onNavigateToCoach={() => setPage('coach')}
-            onUpdateProfile={(updatedProfile: UserProfile) => {
-              setProfile(updatedProfile);
-              saveStateToStorage(updatedProfile, challenges, actions, history);
-            }}
-          />
-        )}
+        <Suspense fallback={<PageLoader />}>
+          {page === 'dashboard' && profile.hasCompletedOnboarding && (
+            <div id={panelIds.dashboard} role="tabpanel" aria-labelledby={tabIds.dashboard}>
+              <Dashboard
+                profile={profile}
+                footprint={activeFootprint}
+                challenges={challenges}
+                onToggleChallengeDay={handleToggleChallengeDay}
+                history={history}
+                onAddHistoryLog={handleAddHistoryLog}
+                onClearHistory={handleClearHistory}
+                onNavigateToCoach={() => setPage('coach')}
+                onUpdateProfile={(updatedProfile: UserProfile) => {
+                  setProfile(updatedProfile);
+                  saveStateToStorage(updatedProfile, challenges, actions, history);
+                }}
+              />
+            </div>
+          )}
 
-        {page === 'coach' && profile.hasCompletedOnboarding && (
-          <SmartCoach
-            profile={profile}
-            footprint={activeFootprint}
-            actions={actions}
-            onToggleAction={handleToggleAction}
-          />
-        )}
+          {page === 'coach' && profile.hasCompletedOnboarding && (
+            <div id={panelIds.coach} role="tabpanel" aria-labelledby={tabIds.coach}>
+              <SmartCoach
+                profile={profile}
+                footprint={activeFootprint}
+                actions={actions}
+                onToggleAction={handleToggleAction}
+              />
+            </div>
+          )}
 
-        {page === 'tests' && (
-          <TestSuiteRunner />
-        )}
+          {page === 'tests' && (
+            <div id={panelIds.tests} role="tabpanel" aria-labelledby={tabIds.tests}>
+              <TestSuiteRunner />
+            </div>
+          )}
+        </Suspense>
       </main>
 
       {/* Footer Branding Area */}
@@ -445,8 +474,8 @@ export default function App() {
             </div>
             
             <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50/50 px-3 py-1 rounded-full text-[11px] font-bold border border-emerald-100/40">
-              <Footprints className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
-              100% Client-Side Encryption
+              <Shield className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
+              Privacy-First Local Storage
             </div>
           </div>
 
@@ -544,7 +573,7 @@ export default function App() {
       {/* Custom Reset Confirmation Modal */}
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-905/60 backdrop-blur-xs animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden animate-shake-modal">
+          <div ref={resetModalRef} className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden animate-shake-modal">
             
             {/* Modal Body */}
             <div className="p-6 sm:p-8 space-y-5 text-center">
