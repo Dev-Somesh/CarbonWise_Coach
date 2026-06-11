@@ -1,5 +1,10 @@
 import { UserProfile, SustainabilityAction, WeeklyChallenge } from '../types';
 
+export interface RecommendationContext {
+  profile: UserProfile;
+  totalEmissions: number;
+}
+
 // Static template pools for personalization
 const TRANSPORT_TACTICS: Omit<SustainabilityAction, 'completed'>[] = [
   {

@@ -219,14 +219,14 @@ app.post("/api/coach-insights", aiRateLimiter, async (req, res) => {
     const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     if (ai) {
-      const modelsToTry = ["gemini-3.1-flash-lite", "gemini-3.5-flash"];
+      const modelsToTry = ["gemini-2.0-flash-lite", "gemini-2.0-flash"];
       let success = false;
       let lastError: unknown = null;
 
       for (const modelName of modelsToTry) {
         if (success) break;
 
-        const maxAttempts = modelName === "gemini-3.1-flash-lite" ? 2 : 1;
+        const maxAttempts = modelName === "gemini-2.0-flash-lite" ? 2 : 1;
 
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
           try {
@@ -386,7 +386,7 @@ app.post("/api/coach-chat", aiRateLimiter, async (req, res) => {
 
     console.log("Routing chat message request to Gemini flash engine.");
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: formattedContents,
       config: {
         systemInstruction: systemInstruction,

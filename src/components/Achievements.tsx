@@ -172,8 +172,8 @@ export default function Achievements({ profile, footprint, challenges, history }
         </div>
       </div>
 
-      {/* Grid of Badges */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4" id="badges-grid-container">
+      {/* Grid of Badges — 2 cols on mobile, 4 on md+, full page width */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4" id="badges-grid-container">
         {badges.map((badge, index) => {
           const IconComponent = badge.icon;
           return (
@@ -183,47 +183,49 @@ export default function Achievements({ profile, footprint, challenges, history }
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className={`p-4 rounded-2xl border transition-all duration-300 relative flex flex-col justify-between ${
-                badge.unlocked 
-                  ? `${badge.bgClass} ${badge.borderClass} shadow-xs hover:shadow-md hover:scale-[1.02]` 
-                  : 'bg-slate-50/60 border-slate-100 opacity-60 filter grayscale'
+              className={`p-5 rounded-2xl border transition-all duration-300 relative flex flex-col gap-3 ${
+                badge.unlocked
+                  ? `${badge.bgClass} ${badge.borderClass} shadow-xs hover:shadow-md hover:scale-[1.02]`
+                  : 'bg-slate-50/60 border-slate-100 opacity-55 grayscale'
               }`}
             >
-              <div className="flex items-start gap-3">
+              {/* Icon + title row */}
+              <div className="flex items-center gap-3">
                 <div className={`p-2.5 rounded-xl shrink-0 ${
-                  badge.unlocked 
-                    ? `bg-white shadow-xs border border-slate-100 ${badge.colorClass}` 
+                  badge.unlocked
+                    ? `bg-white shadow-xs border border-slate-100 ${badge.colorClass}`
                     : 'bg-slate-200 text-slate-400'
                 }`}>
-                  <IconComponent className="w-5 h-5" />
+                  <IconComponent className="w-5 h-5" aria-hidden="true" />
                 </div>
-                
-                <div className="space-y-0.5">
-                  <h4 className={`text-xs font-bold tracking-tight ${
-                    badge.unlocked ? 'text-slate-800' : 'text-slate-500'
-                  }`}>
-                    {badge.title}
-                  </h4>
-                  <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
-                    {badge.description}
-                  </p>
-                </div>
+                <h4 className={`text-sm font-bold leading-snug ${
+                  badge.unlocked ? 'text-slate-800' : 'text-slate-500'
+                }`}>
+                  {badge.title}
+                </h4>
               </div>
 
-              {/* Requirement badge */}
-              <div className="mt-3 pt-2 border-t border-slate-100/60 flex items-center justify-between text-[9px] font-mono font-semibold text-slate-450">
-                <span>Task:</span>
-                <span className={badge.unlocked ? 'text-emerald-700 font-bold' : 'text-slate-500'}>
-                  {badge.requirement}
-                </span>
+              {/* Description */}
+              <p className="text-xs text-slate-500 leading-relaxed flex-1">
+                {badge.description}
+              </p>
+
+              {/* Requirement */}
+              <div className="pt-2.5 border-t border-slate-200/60">
+                <p className="text-[11px] leading-relaxed">
+                  <span className="font-mono font-bold text-slate-400 uppercase tracking-wide">Task: </span>
+                  <span className={badge.unlocked ? 'text-emerald-700 font-semibold' : 'text-slate-400'}>
+                    {badge.requirement}
+                  </span>
+                </p>
               </div>
 
-              {/* Status Ribbon */}
+              {/* Unlocked pulse dot */}
               {badge.unlocked && (
-                <div className="absolute top-2.5 right-2.5">
+                <div className="absolute top-3 right-3">
                   <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                   </span>
                 </div>
               )}

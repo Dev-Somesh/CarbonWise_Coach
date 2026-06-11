@@ -84,6 +84,8 @@ export const coachChatResponseSchema = z.object({
 
 export type CoachInsightsInput = z.infer<typeof coachInsightsSchema>;
 export type CoachChatInput = z.infer<typeof coachChatSchema>;
+export type CoachInsightResponseData = z.infer<typeof coachInsightResponseSchema>;
+export type CoachChatResponseData = z.infer<typeof coachChatResponseSchema>;
 
 export function parseCoachInsights(body: unknown) {
   return coachInsightsSchema.safeParse(body);

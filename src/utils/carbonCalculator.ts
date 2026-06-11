@@ -6,6 +6,12 @@ import {
   CarbonFootprint
 } from '../types';
 
+export interface EmissionsClassification {
+  label: string;
+  color: string;
+  description: string;
+}
+
 // Transport emission constants (kg CO2e per km or per unit)
 export const TRANSPORT_CONSTANTS = {
   petrol: 0.18,      // Petrol car per km
@@ -155,11 +161,7 @@ export function calculateCarbonFootprint(
  * standard average per capita in developed countries is approx 10,000 kg CO2e/year.
  * Target climate average to stay below 1.5C warming is 2,000 kg CO2e/year (or less).
  */
-export function getEmissionsClassification(totalEmissions: number): {
-  label: string;
-  color: string;
-  description: string;
-} {
+export function getEmissionsClassification(totalEmissions: number): EmissionsClassification {
   if (totalEmissions < 2500) {
     return {
       label: 'Eco Champion (Low Footprint)',

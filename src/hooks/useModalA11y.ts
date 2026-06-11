@@ -1,8 +1,11 @@
 import { useEffect, useRef, type RefObject } from 'react';
 
-/**
- * Traps focus inside an open modal and closes on Escape.
- */
+export interface ModalA11yOptions {
+  isOpen: boolean;
+  onClose: () => void;
+  containerRef: RefObject<HTMLElement | null>;
+}
+
 export function useModalA11y(
   isOpen: boolean,
   onClose: () => void,

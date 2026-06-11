@@ -26,7 +26,14 @@ export const DEFAULT_PROFILE: UserProfile = {
   },
 };
 
-export const GLOBAL_BENCHMARKS = {
+export interface GlobalBenchmarks {
+  target: number;
+  worldAverage: number;
+  usAverage: number;
+  euAverage: number;
+}
+
+export const GLOBAL_BENCHMARKS: GlobalBenchmarks = {
   target: 2000,       // Climate average to keep below 1.5C (kg/year)
   worldAverage: 4700, // True world average individual footprint (kg/year)
   usAverage: 15500,   // US average (kg/year)

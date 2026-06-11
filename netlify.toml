@@ -8,6 +8,11 @@
   APP_URL = "https://carbonwisecoach.netlify.app"
 
 [[redirects]]
+  from = "/favicon.ico"
+  to = "/favicon-32.png"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

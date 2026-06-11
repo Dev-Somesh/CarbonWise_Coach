@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight, ShieldCheck, Sparkles, Flame, Car, Utensils, Zap, ShoppingBag, Footprints, LineChart, Sliders, FileText, Bot, Trophy, CheckCircle2 } from 'lucide-react';
 
-interface LandingProps {
+export interface LandingProps {
   onStartOnboarding: () => void;
   onExploreDemo: () => void;
 }

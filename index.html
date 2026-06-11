@@ -20,10 +20,11 @@
     <meta name="theme-color" content="#059669" />
     <meta name="color-scheme" content="light" />
 
-    <!-- Canonical & icons (update og:url/canonical href after deploy if needed) -->
-    <link rel="canonical" href="https://carbonwise-coach.vercel.app/" />
+    <!-- Canonical & icons — APP_URL env injected at build (Netlify) -->
+    <link rel="canonical" href="__APP_URL__/" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/manifest.json" />
 
     <!-- Open Graph / Facebook -->
@@ -35,11 +36,11 @@
       property="og:description"
       content="Measure your carbon footprint, track emissions over time, and get personalized AI sustainability coaching backed by EPA, IPCC, and IEA data."
     />
-    <meta property="og:image" content="https://carbonwise-coach.vercel.app/og-image.png" />
+    <meta property="og:image" content="__APP_URL__/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="CarbonWise Coach — measure, track, and reduce your carbon footprint" />
-    <meta property="og:url" content="https://carbonwise-coach.vercel.app/" />
+    <meta property="og:url" content="__APP_URL__/" />
 
     <!-- Twitter / X Card -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -48,7 +49,7 @@
       name="twitter:description"
       content="Interactive carbon footprint assessment, trend analytics, weekly challenges, and AI-powered sustainability coaching."
     />
-    <meta name="twitter:image" content="https://carbonwise-coach.vercel.app/og-image.png" />
+    <meta name="twitter:image" content="__APP_URL__/og-image.png" />
     <meta name="twitter:image:alt" content="CarbonWise Coach sustainability dashboard preview" />
 
     <!-- Structured data for search engines & automated reviewers -->
@@ -57,7 +58,7 @@
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "CarbonWise Coach",
-        "url": "https://carbonwise-coach.vercel.app/",
+        "url": "__APP_URL__/",
         "description": "Personal sustainability hub to measure annual CO2e emissions, track reduction progress, and receive AI-powered climate coaching.",
         "applicationCategory": "LifestyleApplication",
         "operatingSystem": "Web Browser",

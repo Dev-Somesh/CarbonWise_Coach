@@ -1,6 +1,14 @@
 import React from 'react';
 import { Database, FileSpreadsheet, Scale, ExternalLink } from 'lucide-react';
 
+export interface CalculationSource {
+  title: string;
+  version: string;
+  purpose: string;
+  citation: string;
+  link: string;
+}
+
 export default function CalculationSources() {
   const sources = [
     {

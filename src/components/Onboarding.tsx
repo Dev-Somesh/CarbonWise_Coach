@@ -3,7 +3,7 @@ import { UserProfile, CommuteMethod, DietType, FoodWasteLevel, SourcingPreferenc
 import { ChevronLeft, ChevronRight, User, Plane, Flame, ShoppingBag, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-interface OnboardingProps {
+export interface OnboardingProps {
   onComplete: (profile: UserProfile) => void;
   initialProfile: UserProfile;
 }

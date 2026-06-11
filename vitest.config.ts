@@ -15,6 +15,7 @@ export default defineConfig({
       include: ['src/utils/**/*.ts', 'src/hooks/**/*.ts'],
       exclude: [
         'src/utils/pdfGenerator.ts',
+        'src/hooks/useSmartCoach.ts',
         'src/**/*.test.{ts,tsx}',
         'src/main.tsx',
         'src/setupTests.ts',

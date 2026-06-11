@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CarbonWise Coach — Project Documentation</title>
+  <meta name="description" content="Complete technical documentation for CarbonWise Coach: architecture, flows, API, deployment, and testing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/docs.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <a class="topbar-brand" href="#top">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16"/><path d="M14 14l1.586-1.586a2 2 0 0 1 2.828 0L20 14"/><path d="M8 20h8"/><path d="M12 16v4"/></svg>
+      CarbonWise Coach Docs
+    </a>
+    <div class="topbar-links">
+      <button class="menu-toggle" type="button" aria-label="Toggle navigation" id="menuToggle">☰</button>
+      <a href="ARCHITECTURE.md">Markdown</a>
+      <a href="https://github.com/Dev-Somesh/CarbonWise_Coach" target="_blank" rel="noopener">GitHub</a>
+      <a class="live" href="https://carbonwisecoach.netlify.app" target="_blank" rel="noopener">Live App →</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Documentation sections">
+      <h3>Overview</h3>
+      <a href="#introduction">Introduction</a>
+      <a href="#features">Features</a>
+      <a href="#tech-stack">Tech Stack</a>
+
+      <h3>Flows</h3>
+      <a href="#user-journey">User Journey</a>
+      <a href="#data-flow">Data &amp; Storage</a>
+      <a href="#dashboard-flow">Dashboard Tabs</a>
+      <a href="#api-flow">API &amp; AI Coach</a>
+      <a href="#build-flow">Build &amp; Deploy</a>
+      <a href="#ci-flow">CI Pipeline</a>
+
+      <h3>Architecture</h3>
+      <a href="#project-structure">Project Structure</a>
+      <a href="#dashboard-modules">Dashboard Modules</a>
+      <a href="#hooks-utils">Hooks &amp; Utils</a>
+
+      <h3>Operations</h3>
+      <a href="#getting-started">Getting Started</a>
+      <a href="#environment">Environment</a>
+      <a href="#scripts">Scripts</a>
+      <a href="#testing">Testing</a>
+      <a href="#deployment">Deployment</a>
+      <a href="#security">Security</a>
+      <a href="#seo">SEO</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
+    <main class="main" id="top">
+
+      <!-- HERO -->
+      <div class="hero">
+        <span class="hero-badge">Developer Documentation</span>
+        <h1>CarbonWise Coach<br />Complete Project Guide</h1>
+        <p>Visual flows, architecture maps, API reference, and deployment notes — everything you need to understand, run, and extend the app.</p>
+        <div class="hero-meta">
+          <a href="https://carbonwisecoach.netlify.app" target="_blank" rel="noopener">🌐 carbonwisecoach.netlify.app</a>
+          <a href="https://github.com/Dev-Somesh/CarbonWise_Coach" target="_blank" rel="noopener">📦 GitHub Repository</a>
+          <a href="../README.md">📄 README.md</a>
+        </div>
+      </div>
+
+      <!-- INTRODUCTION -->
+      <section id="introduction">
+        <h2>Introduction</h2>
+        <p class="lead">A client-first sustainability hub that estimates annual CO₂e, gamifies habits, and offers AI coaching.</p>
+        <p>CarbonWise Coach is a React 19 single-page application with an optional Express backend for Gemini AI. User profiles, challenge progress, and emission history persist entirely in the browser via <code>localStorage</code> — no server-side user database.</p>
+        <div class="callout info">
+          <strong>How to read this doc</strong>
+          Use the sidebar to jump to <em>Flows</em> for visual diagrams, or <em>Architecture</em> for file-level detail. Markdown version: <a href="ARCHITECTURE.md">ARCHITECTURE.md</a>.
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section id="features">
+        <h2>Features</h2>
+        <p class="lead">Four emission sectors, tabbed dashboard, simulator, achievements, PDF export, and Smart Coach.</p>
+
+        <h3>Emission sectors</h3>
+        <div class="card-grid">
+          <div class="card transport">
+            <div class="card-icon">🚗</div>
+            <h4>Transportation</h4>
+            <p>Commute distance, vehicle type, flights — calculated via <code>carbonCalculator.ts</code></p>
+          </div>
+          <div class="card diet">
+            <div class="card-icon">🥗</div>
+            <h4>Diet &amp; Food</h4>
+            <p>Meat frequency, sourcing, food waste parameters</p>
+          </div>
+          <div class="card energy">
+            <div class="card-icon">⚡</div>
+            <h4>Home Utilities</h4>
+            <p>Home size, appliances, clean energy tariff choices</p>
+          </div>
+          <div class="card shopping">
+            <div class="card-icon">🛍️</div>
+            <h4>Shopping &amp; Retail</h4>
+            <p>Garment updates, device lifecycle, recycling habits</p>
+          </div>
+        </div>
+
+        <h3>Additional capabilities</h3>
+        <ul>
+          <li><strong>Tabbed dashboard</strong> — Overview, Take Action, Simulator, Progress (reduces scroll fatigue)</li>
+          <li><strong>What-if sandbox</strong> — Sliders for transport, diet, energy before applying to profile</li>
+          <li><strong>Weekly challenges</strong> — Mon–Sun streak tracker with emission impact</li>
+          <li><strong>Achievements</strong> — Badges unlocked from footprint and habit milestones</li>
+          <li><strong>Historical trends</strong> — Recharts area chart of logged footprints</li>
+          <li><strong>PDF reports</strong> — Client-side jsPDF journey summary</li>
+          <li><strong>Smart Coach</strong> — Gemini chat + insights (rules-engine fallback offline)</li>
+          <li><strong>Accessibility</strong> — Skip link, modal focus traps, ARIA tabs, jsx-a11y lint</li>
+        </ul>
+      </section>
+
+      <!-- TECH STACK -->
+      <section id="tech-stack">
+        <h2>Tech Stack</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Layer</th><th>Technology</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>Frontend</td><td>React 19, TypeScript, Vite 6</td><td>Lazy-loaded routes for Dashboard, Coach, Tests</td></tr>
+              <tr><td>Styling</td><td>Tailwind CSS 4</td><td>@tailwindcss/vite plugin</td></tr>
+              <tr><td>Charts</td><td>Recharts</td><td>History trend in Progress tab</td></tr>
+              <tr><td>PDF</td><td>jsPDF</td><td>Manual chunk in Vite build</td></tr>
+              <tr><td>Animation</td><td>Motion</td><td>Achievements, UI polish</td></tr>
+              <tr><td>Icons</td><td>Lucide React</td><td>Consistent with favicon Footprints motif</td></tr>
+              <tr><td>Server</td><td>Express</td><td><code>server.ts</code> — dev + Node production</td></tr>
+              <tr><td>AI</td><td>@google/genai</td><td>Gemini — server-side only</td></tr>
+              <tr><td>Validation</td><td>Zod</td><td>API I/O + storage parsing</td></tr>
+              <tr><td>Tests</td><td>Vitest, Testing Library, Playwright</td><td>34 unit tests + E2E smoke</td></tr>
+              <tr><td>CI</td><td>GitHub Actions</td><td>Node 22, lint → coverage → build → E2E</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- USER JOURNEY FLOW -->
+      <section id="user-journey">
+        <h2>User Journey Flow</h2>
+        <p class="lead">How a user moves through the application from first visit to ongoing coaching.</p>
+
+        <div class="flow-section">
+          <div class="flow-title">Primary navigation path</div>
+          <div class="flow">
+            <div class="flow-node landing">Landing<small>Marketing &amp; demo CTA</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node onboarding">Onboarding<small>4-step profile wizard</small></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node dashboard">Dashboard<small>Tabbed hub (default)</small></div>
+            <div class="flow-arrow bidirectional">⇄</div>
+            <div class="flow-node coach">Smart Coach<small>Chat &amp; insights</small></div>
+          </div>
+        </div>
+
+        <div class="flow-section">
+          <div class="flow-title">Return visit (hasCompletedOnboarding)</div>
+          <div class="flow vertical">
+            <div class="flow-node landing">App loads</div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node storage">localStorage restore<small>restoreSessionFromStorage()</small></div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node dashboard">Skip to Dashboard<small>Auto if onboarding done</small></div>
+          </div>
+        </div>
+
+        <h3>App pages (<code>App.tsx</code>)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Page state</th><th>Component</th><th>Trigger</th></tr></thead>
+            <tbody>
+              <tr><td><code>landing</code></td><td>Landing.tsx</td><td>Default for new users</td></tr>
+              <tr><td><code>onboarding</code></td><td>Onboarding.tsx</td><td>"Get Started" from landing</td></tr>
+              <tr><td><code>dashboard</code></td><td>Dashboard.tsx (lazy)</td><td>Onboarding complete / nav tab</td></tr>
+              <tr><td><code>coach</code></td><td>SmartCoach.tsx (lazy)</td><td>Nav tab / CTA from dashboard</td></tr>
+              <tr><td><code>tests</code></td><td>TestSuiteRunner.tsx (lazy)</td><td>Dev test runner (footer link)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- DATA FLOW -->
+      <section id="data-flow">
+        <h2>Data &amp; Storage Flow</h2>
+        <p class="lead">All user data stays in the browser. Footprint recalculates when profile or completed actions change.</p>
+
+        <div class="data-flow">
+          <div class="data-box user">User edits<br />profile / challenges</div>
+          <div class="data-arrow">→</div>
+          <div class="data-box app">React state<br /><code>App.tsx</code></div>
+          <div class="data-arrow">→</div>
+          <div class="data-box ls">localStorage<br /><small>Validated on read</small></div>
+        </div>
+
+        <div class="flow-section">
+          <div class="flow-title">Footprint calculation loop</div>
+          <div class="flow">
+            <div class="flow-node dashboard">Profile update</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node api">calculateCarbonFootprint()</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node dashboard">Subtract completed<br />action savings</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node storage">activeFootprint state</div>
+          </div>
+        </div>
+
+        <h3>localStorage keys</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Key area</th><th>Validated by</th><th>Contents</th></tr></thead>
+            <tbody>
+              <tr><td>User profile</td><td><code>storageValidation.ts</code></td><td>Name, transport, diet, energy, shopping, onboarding flag</td></tr>
+              <tr><td>Challenges</td><td><code>storageValidation.ts</code></td><td>Weekly challenges + daysCompleted arrays</td></tr>
+              <tr><td>History</td><td><code>storageValidation.ts</code></td><td>EmissionHistoryItem[] with dated snapshots</td></tr>
+              <tr><td>Actions</td><td><code>storageValidation.ts</code></td><td>SustainabilityAction[] for coach habits</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- DASHBOARD FLOW -->
+      <section id="dashboard-flow">
+        <h2>Dashboard Tab Flow</h2>
+        <p class="lead">Four sticky tabs replace one long scroll. State managed by <code>useDashboardState</code>.</p>
+
+        <div class="tab-flow">
+          <div class="tab-card">
+            <div class="tab-num">1</div>
+            <h4>Overview</h4>
+            <p>Score, categories, peer comparison, coach CTA</p>
+            <code>overview</code>
+          </div>
+          <div class="tab-card">
+            <div class="tab-num">2</div>
+            <h4>Take Action</h4>
+            <p>Quick wins + weekly habit challenges</p>
+            <code>action</code>
+          </div>
+          <div class="tab-card">
+            <div class="tab-num">3</div>
+            <h4>Simulator</h4>
+            <p>What-if sliders, apply to profile</p>
+            <code>tools</code>
+          </div>
+          <div class="tab-card">
+            <div class="tab-num">4</div>
+            <h4>Progress</h4>
+            <p>Badges, history chart, logs, sources</p>
+            <code>progress</code>
+          </div>
+        </div>
+
+        <div class="flow-section">
+          <div class="flow-title">Overview → Action shortcut</div>
+          <div class="flow">
+            <div class="flow-node dashboard">Quick-win teaser<br />on Overview</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node dashboard">setActiveTab('action')</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node dashboard">Full QuickWinCard</div>
+          </div>
+        </div>
+
+        <h3>Header actions (always visible)</h3>
+        <ul>
+          <li><strong>Methodology</strong> — Opens MethodologyModal</li>
+          <li><strong>PDF</strong> — <code>generateCarbonReport()</code> via jsPDF</li>
+          <li><strong>Log Week</strong> — Simulates reduced footprint → adds history entry</li>
+          <li><strong>Share</strong> — Toast placeholder for scorecard export</li>
+        </ul>
+      </section>
+
+      <!-- API FLOW -->
+      <section id="api-flow">
+        <h2>API &amp; Smart Coach Flow</h2>
+        <p class="lead">Gemini runs server-side only. Production Netlify static deploy uses rules-engine fallback.</p>
+
+        <div class="flow-section">
+          <div class="flow-title">Smart Coach request (Node / local dev)</div>
+          <div class="flow vertical" style="max-width:480px">
+            <div class="flow-node coach">SmartCoach.tsx</div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node api">POST /api/coach-chat<br />or /api/coach-insights</div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node api">Zod validate body<br />Rate limit 60/15min</div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node api">Gemini API<br />(GEMINI_API_KEY)</div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node api">Zod validate response</div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node coach">Render in UI</div>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          <strong>Netlify static deploy caveat</strong>
+          Express <code>/api/*</code> routes do <em>not</em> run on plain Netlify. Smart Coach automatically falls back to <code>recommendations.ts</code> rules engine when API calls fail. To enable live AI on Netlify, add Netlify Functions or host the Node server separately.
+        </div>
+
+        <h3>API endpoints</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Endpoint</th><th>Method</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>/api/coach-insights</code></td><td>POST</td><td>Structured coaching insights from profile + footprint</td></tr>
+              <tr><td><code>/api/coach-chat</code></td><td>POST</td><td>Conversational chat (max 20 messages truncated)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- BUILD FLOW -->
+      <section id="build-flow">
+        <h2>Build &amp; Deploy Flow</h2>
+
+        <div class="flow-section">
+          <div class="flow-title">Local development</div>
+          <div class="flow">
+            <div class="flow-node build">npm run dev</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node api">Express + Vite HMR</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node dashboard">localhost:3000</div>
+          </div>
+        </div>
+
+        <div class="flow-section">
+          <div class="flow-title">Production build</div>
+          <div class="flow vertical" style="max-width:420px">
+            <div class="flow-node build">npm run build</div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node build">vite build → dist/</div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node build">esbuild server.ts → dist/server.cjs</div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node build">SEO plugin injects APP_URL</div>
+            <div class="flow-arrow down">→</div>
+            <div class="flow-node build">docs/ copied → dist/docs/</div>
+          </div>
+        </div>
+
+        <div class="flow-section">
+          <div class="flow-title">Netlify production</div>
+          <div class="flow">
+            <div class="flow-node netlify">Git push main</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node build">npm run build</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node netlify">Publish dist/</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node netlify">SPA redirect /* → index.html</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CI FLOW -->
+      <section id="ci-flow">
+        <h2>CI Pipeline Flow</h2>
+        <p class="lead">GitHub Actions — <code>.github/workflows/ci.yml</code></p>
+
+        <div class="pipeline">
+          <span class="pipeline-step">Push / PR</span>
+          <span class="pipeline-arrow">→</span>
+          <span class="pipeline-step">npm ci</span>
+          <span class="pipeline-arrow">→</span>
+          <span class="pipeline-step">lint</span>
+          <span class="pipeline-arrow">→</span>
+          <span class="pipeline-step">test:coverage</span>
+          <span class="pipeline-arrow">→</span>
+          <span class="pipeline-step">build</span>
+        </div>
+
+        <div class="pipeline">
+          <span class="pipeline-step">E2E job (parallel)</span>
+          <span class="pipeline-arrow">→</span>
+          <span class="pipeline-step">Playwright install</span>
+          <span class="pipeline-arrow">→</span>
+          <span class="pipeline-step">test:e2e</span>
+        </div>
+      </section>
+
+      <!-- PROJECT STRUCTURE -->
+      <section id="project-structure">
+        <h2>Project Structure</h2>
+        <div class="tree">
+<span class="dir">CarbonWise_Coach/</span>
+├── <span class="dir">.github/workflows/</span>ci.yml
+├── <span class="dir">docs/</span>                    <span class="comment">← You are here (HTML + ARCHITECTURE.md)</span>
+├── <span class="dir">e2e/</span>smoke.spec.ts
+├── <span class="dir">public/</span>                  <span class="comment">favicon, og-image, robots, sitemap, manifest</span>
+├── <span class="dir">src/</span>
+│   ├── App.tsx
+│   ├── <span class="dir">components/</span>
+│   │   ├── Dashboard.tsx          <span class="comment">orchestrator (~150 lines)</span>
+│   │   ├── <span class="dir">dashboard/</span>           <span class="comment">tab panels (12 files)</span>
+│   │   ├── SmartCoach.tsx
+│   │   ├── Onboarding.tsx, Landing.tsx
+│   │   ├── Achievements.tsx, PeerComparison.tsx
+│   │   ├── CarbonFootprintArt.tsx, EmissionBar.tsx
+│   │   └── …modals &amp; widgets
+│   ├── <span class="dir">hooks/</span>
+│   │   ├── useDashboardState.ts
+│   │   └── useModalA11y.ts
+│   ├── <span class="dir">utils/</span>
+│   │   ├── carbonCalculator.ts, recommendations.ts
+│   │   ├── apiValidation.ts, storageValidation.ts
+│   │   ├── footprintBreakdown.ts, weekDays.ts
+│   │   ├── pdfGenerator.ts, presets.ts
+│   │   └── *.test.ts
+│   └── types.ts
+├── server.ts
+├── vite.config.ts
+├── netlify.toml
+└── .env.example
+        </div>
+      </section>
+
+      <!-- DASHBOARD MODULES -->
+      <section id="dashboard-modules">
+        <h2>Dashboard Modules</h2>
+        <p class="lead"><code>src/components/dashboard/</code> — refactored from monolithic Dashboard.tsx</p>
+        <div class="comp-map">
+          <div class="comp-item"><strong>types.ts</strong><span>DashboardTab, ScoreViewMode, QuickWinTip</span></div>
+          <div class="comp-item"><strong>constants.ts</strong><span>DASHBOARD_TABS, QUICK_WIN_TIPS</span></div>
+          <div class="comp-item"><strong>DashboardHeader.tsx</strong><span>Welcome bar + actions</span></div>
+          <div class="comp-item"><strong>DashboardTabNav.tsx</strong><span>Sticky accessible tabs</span></div>
+          <div class="comp-item"><strong>DashboardOverviewTab.tsx</strong><span>Overview panel layout</span></div>
+          <div class="comp-item"><strong>QuickWinCard.tsx</strong><span>teaser + full variants</span></div>
+          <div class="comp-item"><strong>CarbonScoreGauge.tsx</strong><span>Meter view toggle</span></div>
+          <div class="comp-item"><strong>EmissionsBreakdown.tsx</strong><span>Category EmissionBars</span></div>
+          <div class="comp-item"><strong>WeeklyChallenges.tsx</strong><span>7-day streak grids</span></div>
+          <div class="comp-item"><strong>CarbonSandbox.tsx</strong><span>What-if simulator</span></div>
+          <div class="comp-item"><strong>CarbonHistory.tsx</strong><span>Chart + log list</span></div>
+          <div class="comp-item"><strong>DashboardToast.tsx</strong><span>Success notifications</span></div>
+        </div>
+      </section>
+
+      <!-- HOOKS & UTILS -->
+      <section id="hooks-utils">
+        <h2>Hooks &amp; Utils</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>File</th><th>Role</th></tr></thead>
+            <tbody>
+              <tr><td><code>useDashboardState.ts</code></td><td>Tab state, simulation, quick wins, toasts, PDF/JSON handlers</td></tr>
+              <tr><td><code>useModalA11y.ts</code></td><td>Focus trap + Escape for modals</td></tr>
+              <tr><td><code>carbonCalculator.ts</code></td><td>Core emission math (transport, diet, energy, shopping)</td></tr>
+              <tr><td><code>recommendations.ts</code></td><td>Rules-engine coach fallback + challenge suggestions</td></tr>
+              <tr><td><code>apiValidation.ts</code></td><td>Zod schemas for AI request/response</td></tr>
+              <tr><td><code>storageValidation.ts</code></td><td>Safe localStorage parse + restore</td></tr>
+              <tr><td><code>footprintBreakdown.ts</code></td><td>Category % and primary emitter</td></tr>
+              <tr><td><code>weekDays.ts</code></td><td>Mon–Sun dates for challenge tracker</td></tr>
+              <tr><td><code>pdfGenerator.ts</code></td><td>Multi-page carbon journey PDF</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- GETTING STARTED -->
+      <section id="getting-started">
+        <h2>Getting Started</h2>
+        <pre><code># Prerequisites: Node.js ≥ 20 (CI uses 22)
+
+npm install
+cp .env.example .env    # optional: GEMINI_API_KEY for live AI locally
+npm run dev             # http://localhost:3000</code></pre>
+      </section>
+
+      <!-- ENVIRONMENT -->
+      <section id="environment">
+        <h2>Environment Variables</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Variable</th><th>Required</th><th>Where</th></tr></thead>
+            <tbody>
+              <tr><td><code>GEMINI_API_KEY</code></td><td>Optional locally</td><td><code>server.ts</code> only — never in browser</td></tr>
+              <tr><td><code>APP_URL</code></td><td>Production builds</td><td>Vite SEO plugin → meta tags in index.html</td></tr>
+              <tr><td><code>PORT</code></td><td>Optional</td><td>Express server (default 3000)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SCRIPTS -->
+      <section id="scripts">
+        <h2>npm Scripts</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>npm run dev</code></td><td>Express + Vite dev server</td></tr>
+              <tr><td><code>npm run build</code></td><td>Client bundle + server.cjs + copy docs</td></tr>
+              <tr><td><code>npm run start</code></td><td>Production Node server (SPA + API)</td></tr>
+              <tr><td><code>npm run lint</code></td><td>tsc + ESLint (jsx-a11y)</td></tr>
+              <tr><td><code>npm run test</code></td><td>Vitest (34 tests)</td></tr>
+              <tr><td><code>npm run test:coverage</code></td><td>Vitest with thresholds</td></tr>
+              <tr><td><code>npm run test:e2e</code></td><td>Playwright smoke tests</td></tr>
+              <tr><td><code>npm run docs:open</code></td><td>Serve this documentation locally</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TESTING -->
+      <section id="testing">
+        <h2>Testing</h2>
+        <ul>
+          <li><strong>Unit:</strong> carbonCalculator, recommendations, apiValidation, storageValidation</li>
+          <li><strong>Component:</strong> Onboarding, ErrorBoundary, useModalA11y</li>
+          <li><strong>E2E:</strong> Landing, demo dashboard, SEO meta tags</li>
+        </ul>
+        <pre><code>npm run lint && npm run test && npm run test:e2e</code></pre>
+      </section>
+
+      <!-- DEPLOYMENT -->
+      <section id="deployment">
+        <h2>Deployment</h2>
+        <h3>Netlify (production)</h3>
+        <ul>
+          <li>URL: <a href="https://carbonwisecoach.netlify.app">carbonwisecoach.netlify.app</a></li>
+          <li>Config: <code>netlify.toml</code> — Node 22, publish <code>dist/</code></li>
+          <li>Set <code>APP_URL</code> in Netlify env vars</li>
+          <li>Docs available at <code>/docs/</code> after build</li>
+        </ul>
+        <h3>Full-stack Node</h3>
+        <pre><code>npm run build && npm run start</code></pre>
+      </section>
+
+      <!-- SECURITY -->
+      <section id="security">
+        <h2>Security</h2>
+        <ul>
+          <li>API keys server-side only</li>
+          <li>Helmet + CSP in production</li>
+          <li>Rate limit: 60 req / 15 min on AI endpoints</li>
+          <li>Zod validation on all POST bodies and AI responses</li>
+          <li>Chat truncated to 20 messages (client + server)</li>
+          <li>Request body max 32 KB</li>
+          <li>No server-side user database — localStorage only</li>
+        </ul>
+      </section>
+
+      <!-- SEO -->
+      <section id="seo">
+        <h2>SEO &amp; Social</h2>
+        <ul>
+          <li><code>index.html</code> — OG, Twitter Card, JSON-LD WebApplication</li>
+          <li><code>public/og-image.png</code> — 1200×630 preview</li>
+          <li><code>public/robots.txt</code>, <code>sitemap.xml</code>, <code>manifest.json</code></li>
+          <li>Build-time <code>__APP_URL__</code> replacement via vite SEO plugin</li>
+        </ul>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="contact">
+        <h2>Contact</h2>
+        <p><strong>Project architect:</strong> Somesh Bhardwaj</p>
+        <ul>
+          <li>Email: <a href="mailto:hello@someshbhardwaj.dev">hello@someshbhardwaj.dev</a></li>
+          <li>Portfolio: <a href="https://someshbhardwaj.dev">someshbhardwaj.dev</a></li>
+          <li>GitHub: <a href="https://github.com/Dev-Somesh">Dev-Somesh</a></li>
+          <li>LinkedIn: <a href="https://www.linkedin.com/in/ersomeshbhardwaj/">@ersomeshbhardwaj</a></li>
+        </ul>
+        <p><strong>Client authorization:</strong> itdeveloper06@gmail.com</p>
+      </section>
+
+      <footer class="doc-footer">
+        CarbonWise Coach Documentation · Calculations align with IPCC AR6, IEA 2023, and EPA equivalencies where cited in-app.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // Sidebar active section highlight
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.sidebar a');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          navLinks.forEach((link) => {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+
+    sections.forEach((s) => observer.observe(s));
+
+    // Mobile menu
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('open');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { Award, Eye, Wind, Flame } from 'lucide-react';
 
-interface CarbonFootprintArtProps {
+export interface CarbonFootprintArtProps {
   footprintTotal: number;
   scoreViewMode?: 'gauge' | 'footprint';
   setScoreViewMode?: (mode: 'gauge' | 'footprint') => void;
+  /** Shorter card for tabbed dashboard overview */
+  compact?: boolean;
 }
 
 export default function CarbonFootprintArt({ 
   footprintTotal,
   scoreViewMode,
-  setScoreViewMode
+  setScoreViewMode,
+  compact = false,
 }: CarbonFootprintArtProps) {
   const [activeInteractiveElement, setActiveInteractiveElement] = useState<string | null>(null);
   const [showAnatomyLabels, setShowAnatomyLabels] = useState(false);
@@ -34,7 +37,7 @@ export default function CarbonFootprintArt({
   };
 
   return (
-    <div className="bg-slate-950 rounded-3xl border border-slate-800 shadow-xl p-5 sm:p-6 text-white relative overflow-hidden flex flex-col justify-between select-none h-full min-h-[460px]">
+    <div className={`bg-slate-950 rounded-3xl border border-slate-800 shadow-xl p-5 sm:p-6 text-white relative overflow-hidden flex flex-col justify-between select-none h-full ${compact ? 'min-h-[300px]' : 'min-h-[460px]'}`}>
       
       {/* Background radial atmosphere */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-emerald-950/30 via-transparent to-rose-950/15 pointer-events-none" />

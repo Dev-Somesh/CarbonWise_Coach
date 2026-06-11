@@ -1,18 +1,18 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertCircle } from 'lucide-react';
 
-interface Props {
+export interface ErrorBoundaryProps {
   children: ReactNode;
 }
 
-interface State {
+export interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-export default class ErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false };
+export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false };
 
-  static getDerivedStateFromError(): State {
+  static getDerivedStateFromError(): ErrorBoundaryState {
     return { hasError: true };
   }
 
