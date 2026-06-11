@@ -1,5 +1,5 @@
 import { Award, RotateCw, Zap } from 'lucide-react';
-import type { EmissionCategory, QuickWinTip } from '../../domain/dashboardTypes';
+import type { EmissionCategory, QuickWinTip } from '../../types';
 
 export interface QuickWinCardBaseProps {
   primaryCategory: EmissionCategory;

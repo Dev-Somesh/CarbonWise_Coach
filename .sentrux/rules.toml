@@ -1,0 +1,17 @@
+# Architectural rules for CarbonWise Coach
+# Enforced by `sentrux check .` and the check_rules MCP tool.
+
+[constraints]
+max_cycles = 0
+no_god_files = true
+
+# Prevent lower layers from reaching into UI (the main modularity anti-pattern).
+[[boundaries]]
+from = "src/hooks/*"
+to = "src/components/*"
+reason = "Hooks must not depend on UI components"
+
+[[boundaries]]
+from = "src/utils/*"
+to = "src/components/*"
+reason = "Utils must not depend on UI components"

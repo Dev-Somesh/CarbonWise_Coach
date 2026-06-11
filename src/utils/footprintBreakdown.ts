@@ -1,5 +1,5 @@
 import type { CarbonFootprint } from '../types';
-import type { EmissionCategory } from '../domain/dashboardTypes';
+import type { EmissionCategory } from '../types';
 
 const BREAKDOWN_CATEGORIES: Omit<EmissionCategory, 'value'>[] = [
   { key: 'transport', label: 'Transportation' },

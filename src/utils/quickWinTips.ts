@@ -1,4 +1,4 @@
-import type { QuickWinTip } from './dashboardTypes';
+import type { QuickWinTip } from '../types';
 
 export const QUICK_WIN_TIPS: Record<string, QuickWinTip[]> = {
   transport: [

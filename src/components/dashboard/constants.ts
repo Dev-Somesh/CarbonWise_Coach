@@ -1,6 +1,6 @@
 import type { ElementType } from 'react';
 import { LayoutGrid, Sparkles, TrendingDown, Zap } from 'lucide-react';
-import type { DashboardTab } from '../../domain/dashboardTypes';
+import type { DashboardTab } from '../../types';
 
 export interface DashboardTabConfig {
   id: DashboardTab;

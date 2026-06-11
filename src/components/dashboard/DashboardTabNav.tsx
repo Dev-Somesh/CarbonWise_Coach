@@ -1,5 +1,5 @@
 import { DASHBOARD_TABS } from './constants';
-import type { DashboardTab } from '../../domain/dashboardTypes';
+import type { DashboardTab } from '../../types';
 
 interface DashboardTabNavProps {
   activeTab: DashboardTab;

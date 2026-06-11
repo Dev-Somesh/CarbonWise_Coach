@@ -18,8 +18,8 @@ import { GLOBAL_BENCHMARKS } from '../utils/presets';
 import { getPrimaryEmissionCategory, getCategoryPercentages } from '../utils/footprintBreakdown';
 import { getCurrentWeekDays } from '../utils/weekDays';
 import { generateCarbonReport } from '../utils/pdfGenerator';
-import type { DashboardTab, ScoreViewMode } from '../domain/dashboardTypes';
-import { QUICK_WIN_TIPS } from '../domain/quickWinTips';
+import type { DashboardTab, ScoreViewMode } from '../types';
+import { QUICK_WIN_TIPS } from '../utils/quickWinTips';
 
 interface UseDashboardStateArgs {
   profile: UserProfile;

@@ -1,4 +1,4 @@
-import type { ScoreViewMode } from '../../domain/dashboardTypes';
+import type { ScoreViewMode } from '../../types';
 
 interface Classification {
   label: string;

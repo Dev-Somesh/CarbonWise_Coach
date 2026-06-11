@@ -5,7 +5,7 @@ import PeerComparison from '../PeerComparison';
 import CarbonScoreGauge from './CarbonScoreGauge';
 import EmissionsBreakdown from './EmissionsBreakdown';
 import QuickWinCard from './QuickWinCard';
-import type { DashboardTab, EmissionCategory, QuickWinTip, ScoreViewMode } from '../../domain/dashboardTypes';
+import type { DashboardTab, EmissionCategory, QuickWinTip, ScoreViewMode } from '../../types';
 
 interface Classification {
   label: string;

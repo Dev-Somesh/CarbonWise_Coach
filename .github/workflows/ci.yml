@@ -21,6 +21,12 @@ jobs:
 
       - run: npm run lint
 
+      - name: Sentrux structural check
+        run: |
+          curl -fsSL https://github.com/sentrux/sentrux/releases/download/v0.5.7/sentrux-linux-x86_64 -o /tmp/sentrux
+          chmod +x /tmp/sentrux
+          /tmp/sentrux check .
+
       - run: npm run test:coverage
 
       - run: npm run build
