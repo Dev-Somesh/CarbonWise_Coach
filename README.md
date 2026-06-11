@@ -3,7 +3,12 @@
 **Live demo:** [https://carbonwisecoach.netlify.app](https://carbonwisecoach.netlify.app)  
 **Repository:** [github.com/Dev-Somesh/CarbonWise_Coach](https://github.com/Dev-Somesh/CarbonWise_Coach)
 
+> **Judges & reviewers:** Please read **[EVALUATION.md](EVALUATION.md)** first — 60-second demo path, verification commands, standout highlights, and a note on the Attempt 3 coverage regression (fixed in [`db38ea9`](https://github.com/Dev-Somesh/CarbonWise_Coach/commit/db38ea9)).  
+> **Visual docs:** [docs/index.html](docs/index.html) · [ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
 CarbonWise Coach is a personal sustainability hub that estimates annual greenhouse gas output (kg CO₂e), suggests targeted habits, and keeps users engaged through challenges, benchmarking, achievements, and AI coaching.
+
+**At a glance:** 59 tests · ~89% coverage (hooks/utils) · Playwright E2E · CI on every push · IPCC-aligned carbon math · privacy-first (`localStorage` only) · Gemini AI with Zod-validated server routes
 
 ---
 

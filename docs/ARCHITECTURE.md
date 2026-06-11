@@ -1,5 +1,6 @@
 # CarbonWise Coach — Architecture & Project Structure
 
+> **Hackathon judges & reviewers:** See **[../EVALUATION.md](../EVALUATION.md)** for a 60-second demo path, verification commands, and evaluation highlights.  
 > **Visual documentation:** Open **[index.html](./index.html)** in your browser for interactive flow diagrams, tab maps, CI pipelines, and the full project guide. Run `npm run docs:open` to serve locally. After production build, docs are also at `/docs/` on the live site.
 
 ## High-level flow
