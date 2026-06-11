@@ -5,62 +5,46 @@ import {
   calculateEnergyEmissions,
   calculateShoppingEmissions,
   calculateCarbonFootprint,
+  getEmissionsClassification,
 } from './carbonCalculator';
 
 describe('Carbon Calculator Calculations', () => {
-
   it('correctly calculates annual transport emissions for solo driving and flights', () => {
     const habits = {
       method: 'petrol' as const,
-      distance: 100, // 100 km/week
+      distance: 100,
       shortFlights: 2,
       longFlights: 1,
     };
-    
-    // Formula: Weekly commute emissions (100 * 0.18 * 52) = 936
-    // Flight emissions: (2 * 150) + (1 * 600) = 900
-    // Total = 1836 kg CO2e
-    const total = calculateTransportEmissions(habits);
-    expect(total).toBe(1836);
+    expect(calculateTransportEmissions(habits)).toBe(1836);
   });
 
   it('correctly calculates annual transport emissions for electric vehicle and public transit', () => {
     const habits = {
       method: 'electric' as const,
-      distance: 200, // 200 km/week
+      distance: 200,
       shortFlights: 0,
       longFlights: 0,
     };
-    
-    // Formula: Weekly commute (200 * 0.05 * 52) = 520
-    const total = calculateTransportEmissions(habits);
-    expect(total).toBe(520);
+    expect(calculateTransportEmissions(habits)).toBe(520);
   });
 
   it('correctly calculates annual diet emissions for vegan and high food waste', () => {
     const habits = {
       type: 'vegan' as const,
-      foodWaste: 'high' as const, // multiplier 1.25
-      sourcing: 'mostly-local' as const, // multiplier 0.9
+      foodWaste: 'high' as const,
+      sourcing: 'mostly-local' as const,
     };
-    
-    // Formula: 700 (base) * 1.25 * 0.9 = 787.5 (rounded to 788)
-    const emissions = calculateDietEmissions(habits);
-    expect(emissions).toBe(788);
+    expect(calculateDietEmissions(habits)).toBe(788);
   });
 
   it('correctly calculates energy emissions for medium house with high-load appliances', () => {
     const habits = {
-      homeSize: 'medium-house' as const, // base 3000
-      highEnergyAppliances: ['ac', 'dryer'], // ac: 300, dryer: 200
-      cleanEnergy: 'solar' as const, // multiplier 0.2
+      homeSize: 'medium-house' as const,
+      highEnergyAppliances: ['ac', 'dryer'],
+      cleanEnergy: 'solar' as const,
     };
-
-    // raw total: 3000 + 300 + 200 = 3500
-    // multiplier: 0.2
-    // total: 700 kg
-    const energy = calculateEnergyEmissions(habits);
-    expect(energy).toBe(700);
+    expect(calculateEnergyEmissions(habits)).toBe(700);
   });
 
   it('correctly calculates shopping emissions with recycling discount', () => {
@@ -69,7 +53,6 @@ describe('Carbon Calculator Calculations', () => {
       electronics: 'none' as const,
       recycling: 'thorough' as const,
     };
-    // (400 + 100) * 0.85 = 425
     expect(calculateShoppingEmissions(habits)).toBe(425);
   });
 
@@ -78,13 +61,20 @@ describe('Carbon Calculator Calculations', () => {
     const diet = { type: 'vegetarian' as const, foodWaste: 'minimal' as const, sourcing: 'mixed' as const };
     const energy = { homeSize: 'apartment' as const, highEnergyAppliances: [], cleanEnergy: 'standard' as const };
     const shopping = { clothing: 'none' as const, electronics: 'none' as const, recycling: 'thorough' as const };
+    expect(calculateCarbonFootprint(transport, diet, energy, shopping).total).toBe(2774);
+  });
+});
 
-    // transport: 50 * 0.04 * 52 = 104
-    // diet: 1000 * 1.0 * 1.0 = 1000
-    // energy: 1500 * 1.0 = 1500
-    // shopping: (100 + 100) * 0.85 = 170
-    // total: 104 + 1000 + 1500 + 170 = 2774
-    const total = calculateCarbonFootprint(transport, diet, energy, shopping);
-    expect(total.total).toBe(2774);
+describe('Emissions classification', () => {
+  it('classifies low footprints as Eco Champion', () => {
+    expect(getEmissionsClassification(2000).label).toContain('Eco Champion');
+  });
+
+  it('classifies moderate footprints', () => {
+    expect(getEmissionsClassification(5000).label).toContain('Conscious Consumer');
+  });
+
+  it('classifies high footprints', () => {
+    expect(getEmissionsClassification(12000).label).toContain('Climate Intensive');
   });
 });

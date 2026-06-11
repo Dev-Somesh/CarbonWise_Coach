@@ -604,8 +604,9 @@ export default function Dashboard({
               
               {/* Parameter 2: Commute Vehicle Options */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 block col-span-1">🚄 Transition Vehicle</label>
+                <label htmlFor="sim-transport-method" className="text-xs font-bold text-slate-700 block col-span-1">🚄 Transition Vehicle</label>
                 <select
+                  id="sim-transport-method"
                   value={simTransportMethod}
                   onChange={(e) => setSimTransportMethod(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition-all"
@@ -620,8 +621,9 @@ export default function Dashboard({
 
               {/* Parameter 3: Dietary Patterns */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 block">🥗 Alternate Diet Choice</label>
+                <label htmlFor="sim-diet-type" className="text-xs font-bold text-slate-700 block">🥗 Alternate Diet Choice</label>
                 <select
+                  id="sim-diet-type"
                   value={simDietType}
                   onChange={(e) => setSimDietType(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition-all"
@@ -636,8 +638,9 @@ export default function Dashboard({
 
               {/* Parameter 4: Renewable Grid Supplies */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 block">⚡ Home Tariff Source</label>
+                <label htmlFor="sim-clean-energy" className="text-xs font-bold text-slate-700 block">⚡ Home Tariff Source</label>
                 <select
+                  id="sim-clean-energy"
                   value={simCleanEnergy}
                   onChange={(e) => setSimCleanEnergy(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer transition-all"

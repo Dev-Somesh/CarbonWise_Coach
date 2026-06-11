@@ -475,7 +475,7 @@ export default function App() {
             
             <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50/50 px-3 py-1 rounded-full text-[11px] font-bold border border-emerald-100/40">
               <Shield className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
-              Privacy-First Local Storage
+              Data stored locally in your browser
             </div>
           </div>
 
@@ -572,7 +572,7 @@ export default function App() {
 
       {/* Custom Reset Confirmation Modal */}
       {isResetModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-905/60 backdrop-blur-xs animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-905/60 backdrop-blur-xs animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title" aria-describedby="reset-modal-desc">
           <div ref={resetModalRef} className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden animate-shake-modal">
             
             {/* Modal Body */}
@@ -583,7 +583,7 @@ export default function App() {
 
               <div className="space-y-2">
                 <h3 id="reset-modal-title" className="text-lg font-bold text-slate-900">Restart Climate Assessment?</h3>
-                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                <p id="reset-modal-desc" className="text-xs sm:text-sm text-slate-500 leading-relaxed">
                   Are you sure you want to delete your current scores, historic trend logs, and habit achievements? This action is permanent and cannot be undone.
                 </p>
               </div>

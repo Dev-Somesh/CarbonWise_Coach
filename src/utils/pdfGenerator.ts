@@ -324,7 +324,7 @@ export function generateCarbonReport({ profile, footprint, challenges, history }
   currentY += 7;
 
   // Formulate dynamic recommendations based on their habits
-  let suggestionsList: { title: string; text: string; impact: string }[] = [];
+  const suggestionsList: { title: string; text: string; impact: string }[] = [];
 
   if (profile.transport.method === 'petrol' || profile.transport.method === 'diesel') {
     suggestionsList.push({

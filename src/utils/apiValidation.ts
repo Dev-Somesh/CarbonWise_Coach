@@ -2,36 +2,47 @@ import { z } from 'zod';
 
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_MESSAGES = 50;
+export const MAX_CHAT_HISTORY = 20;
+const MAX_AI_RESPONSE_LENGTH = 8000;
+
+export const commuteMethodSchema = z.enum(['petrol', 'diesel', 'electric', 'transit', 'active']);
+export const dietTypeSchema = z.enum(['heavy-meat', 'medium-meat', 'low-meat', 'vegetarian', 'vegan']);
+export const foodWasteSchema = z.enum(['minimal', 'moderate', 'high']);
+export const sourcingSchema = z.enum(['mostly-local', 'mixed', 'mostly-imported']);
+export const homeSizeSchema = z.enum(['apartment', 'medium-house', 'large-house']);
+export const cleanEnergySchema = z.enum(['solar', 'mixed', 'standard']);
+export const purchaseFrequencySchema = z.enum(['none', 'moderate', 'frequent']);
+export const recyclingSchema = z.enum(['thorough', 'mixed', 'none']);
 
 const profileRawSchema = z
   .object({
     transport: z
       .object({
-        method: z.string().optional(),
-        distance: z.number().optional(),
-        shortFlights: z.number().optional(),
-        longFlights: z.number().optional(),
+        method: commuteMethodSchema.optional(),
+        distance: z.number().min(0).max(500).optional(),
+        shortFlights: z.number().min(0).max(50).optional(),
+        longFlights: z.number().min(0).max(50).optional(),
       })
       .optional(),
     diet: z
       .object({
-        type: z.string().optional(),
-        foodWaste: z.string().optional(),
-        sourcing: z.string().optional(),
+        type: dietTypeSchema.optional(),
+        foodWaste: foodWasteSchema.optional(),
+        sourcing: sourcingSchema.optional(),
       })
       .optional(),
     energy: z
       .object({
-        homeSize: z.string().optional(),
-        highEnergyAppliances: z.array(z.string()).optional(),
-        cleanEnergy: z.string().optional(),
+        homeSize: homeSizeSchema.optional(),
+        highEnergyAppliances: z.array(z.string().max(50)).max(10).optional(),
+        cleanEnergy: cleanEnergySchema.optional(),
       })
       .optional(),
     shopping: z
       .object({
-        clothing: z.string().optional(),
-        electronics: z.string().optional(),
-        recycling: z.string().optional(),
+        clothing: purchaseFrequencySchema.optional(),
+        electronics: purchaseFrequencySchema.optional(),
+        recycling: recyclingSchema.optional(),
       })
       .optional(),
   })
@@ -61,6 +72,16 @@ export const coachChatSchema = z.object({
   profileRaw: profileRawSchema,
 });
 
+export const coachInsightResponseSchema = z.object({
+  headline: z.string().min(1).max(200),
+  analysis: z.string().min(1).max(4000),
+  recommendations: z.array(z.string().min(1).max(500)).min(1).max(10),
+});
+
+export const coachChatResponseSchema = z.object({
+  text: z.string().min(1).max(MAX_AI_RESPONSE_LENGTH),
+});
+
 export type CoachInsightsInput = z.infer<typeof coachInsightsSchema>;
 export type CoachChatInput = z.infer<typeof coachChatSchema>;
 
@@ -70,6 +91,27 @@ export function parseCoachInsights(body: unknown) {
 
 export function parseCoachChat(body: unknown) {
   return coachChatSchema.safeParse(body);
+}
+
+export function validateCoachInsightResponse(data: unknown) {
+  return coachInsightResponseSchema.safeParse(data);
+}
+
+export function validateCoachChatResponse(text: unknown) {
+  return coachChatResponseSchema.safeParse({ text });
+}
+
+export function sanitizePromptText(value: unknown, maxLength = 200): string {
+  if (typeof value !== 'string') return '';
+  return value
+    .replace(/[\x00-\x1F\x7F]/g, ' ')
+    .replace(/"""/g, '')
+    .trim()
+    .slice(0, maxLength);
+}
+
+export function truncateChatMessages<T>(messages: T[], max = MAX_CHAT_HISTORY): T[] {
+  return messages.slice(-max);
 }
 
 export function extractLatestUserMessage(messages: CoachChatInput['messages']): string | null {

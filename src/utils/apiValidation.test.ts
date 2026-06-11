@@ -3,6 +3,10 @@ import {
   parseCoachInsights,
   parseCoachChat,
   extractLatestUserMessage,
+  validateCoachInsightResponse,
+  validateCoachChatResponse,
+  sanitizePromptText,
+  truncateChatMessages,
 } from './apiValidation';
 
 describe('API request validation', () => {
@@ -17,6 +21,13 @@ describe('API request validation', () => {
       profileRaw: { transport: { method: 'petrol', distance: 50 } },
     });
     expect(result.success).toBe(true);
+  });
+
+  it('rejects coach-insights with invalid enum values', () => {
+    const result = parseCoachInsights({
+      profileRaw: { transport: { method: 'rocket-ship' } },
+    });
+    expect(result.success).toBe(false);
   });
 
   it('rejects coach-insights with negative emissions', () => {
@@ -43,5 +54,33 @@ describe('API request validation', () => {
       { role: 'user' as const, parts: [{ text: 'How do I reduce flights?' }] },
     ];
     expect(extractLatestUserMessage(messages)).toBe('How do I reduce flights?');
+  });
+
+  it('validates AI insight response shape', () => {
+    const result = validateCoachInsightResponse({
+      headline: 'Great job!',
+      analysis: 'Your transport is the top driver.',
+      recommendations: ['Take the train', 'Cycle more', 'Work from home'],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects malformed AI insight responses', () => {
+    expect(validateCoachInsightResponse({ headline: '' }).success).toBe(false);
+  });
+
+  it('validates chat response text length', () => {
+    expect(validateCoachChatResponse('Hello coach').success).toBe(true);
+    expect(validateCoachChatResponse('').success).toBe(false);
+  });
+
+  it('sanitizes prompt injection characters', () => {
+    expect(sanitizePromptText('hello\nworld"""')).toBe('hello world');
+  });
+
+  it('truncates chat history to recent messages', () => {
+    const messages = Array.from({ length: 30 }, (_, i) => ({ id: i }));
+    expect(truncateChatMessages(messages, 20)).toHaveLength(20);
+    expect(truncateChatMessages(messages, 20)[0].id).toBe(10);
   });
 });

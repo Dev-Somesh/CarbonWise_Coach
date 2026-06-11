@@ -286,7 +286,7 @@ export default function Landing({ onStartOnboarding, onExploreDemo }: LandingPro
                 <div>
                   <h4 className="font-bold text-slate-800 text-sm sm:text-base">Secure Local Data Sandbox</h4>
                   <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-medium mt-0.5">
-                    Everything persists right inside your browser's HTML5 storage securely. No logins required to track improvement milestones over time.
+                    Progress is saved locally in your browser. AI coaching features send profile data to the server when you use them. No account login required.
                   </p>
                 </div>
               </div>

@@ -57,12 +57,16 @@ export default function CarbonFootprintArt({
             <div className="flex items-center bg-slate-900 rounded-xl p-1 border border-slate-800 shadow-xl">
               <button
                 onClick={() => setScoreViewMode('footprint')}
+                aria-pressed={scoreViewMode === 'footprint'}
+                aria-label="Switch to art view"
                 className="px-2.5 py-1 text-[11px] font-black rounded-lg cursor-pointer bg-emerald-600 text-white shadow-md border border-emerald-500/20 whitespace-nowrap"
               >
                 Art View
               </button>
               <button
                 onClick={() => setScoreViewMode('gauge')}
+                aria-pressed={scoreViewMode === 'gauge'}
+                aria-label="Switch to meter view"
                 className="px-2.5 py-1 text-[11px] font-bold rounded-lg cursor-pointer text-slate-400 hover:text-white transition-all whitespace-nowrap"
               >
                 Meter View
@@ -72,6 +76,8 @@ export default function CarbonFootprintArt({
 
           <button
             onClick={() => setShowAnatomyLabels(!showAnatomyLabels)}
+            aria-pressed={showAnatomyLabels}
+            aria-label={showAnatomyLabels ? 'Hide anatomy labels' : 'Show anatomy labels'}
             className="flex items-center gap-1.5 px-2.5 bg-slate-900 hover:bg-slate-800 py-1.5 rounded-lg text-[10px] font-mono text-slate-300 pointer-events-auto border border-slate-800 cursor-pointer transition-colors whitespace-nowrap"
             title="Toggle digital labels overlay"
           >

@@ -9,6 +9,10 @@ import {
   parseCoachInsights,
   parseCoachChat,
   extractLatestUserMessage,
+  validateCoachInsightResponse,
+  validateCoachChatResponse,
+  sanitizePromptText,
+  truncateChatMessages,
   type CoachInsightsInput,
 } from "./src/utils/apiValidation";
 
@@ -20,7 +24,23 @@ const HOST = process.env.NODE_ENV === "production" ? "127.0.0.1" : "0.0.0.0";
 
 app.use(
   helmet({
-    contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false,
+    contentSecurityPolicy:
+      process.env.NODE_ENV === "production"
+        ? {
+            directives: {
+              defaultSrc: ["'self'"],
+              scriptSrc: ["'self'"],
+              styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+              fontSrc: ["'self'", "https://fonts.gstatic.com"],
+              imgSrc: ["'self'", "data:"],
+              connectSrc: ["'self'"],
+              objectSrc: ["'none'"],
+              frameAncestors: ["'none'"],
+            },
+          }
+        : false,
+    hsts: process.env.NODE_ENV === "production" ? { maxAge: 31536000, includeSubDomains: true } : false,
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   })
 );
 app.use(express.json({ limit: "32kb" }));
@@ -70,7 +90,7 @@ app.post("/api/coach-insights", aiRateLimiter, async (req, res) => {
       parsedBody.data as CoachInsightsInput;
 
     // --- Elegant dynamic rules-based fallback engine ---
-    const user_name = name || "Eco Friend";
+    const user_name = sanitizePromptText(name, 100) || "Eco Friend";
     const total_emissions_num = Number(totalEmissions) || 5000;
     
     // Choose dynamic headline
@@ -121,7 +141,7 @@ app.post("/api/coach-insights", aiRateLimiter, async (req, res) => {
     }
 
     // Diet specific
-    if (profileRaw?.diet?.type === "heavy-meat" || profileRaw?.diet?.type === "mixed") {
+    if (profileRaw?.diet?.type === "heavy-meat" || profileRaw?.diet?.type === "medium-meat") {
       recommendationsPool.push("Substitute three meals a week featuring beef or lamb with organic legumes or seasonal plant ingredients to save ~550 kg CO2e.");
     }
     if (profileRaw?.diet?.foodWaste === "high") {
@@ -165,7 +185,7 @@ app.post("/api/coach-insights", aiRateLimiter, async (req, res) => {
     }
 
     const prompt = `
-      You are a world-class supportive climate scientist and sustainability developer assisting a user named "${name || 'Eco Advocate'}".
+      You are a world-class supportive climate scientist and sustainability developer assisting a user named "${user_name}".
       They have provided questionnaire responses for their carbon footprint of ${totalEmissions || 5000} kg CO2e/year.
       Here are their detailed statistics (in kg CO2e/year):
       - Transport sector: ${transport || 1200}
@@ -174,10 +194,10 @@ app.post("/api/coach-insights", aiRateLimiter, async (req, res) => {
       - Shopping sector: ${shopping || 500}
       
       User habits detail:
-      - Transport Commuting: ${profileRaw?.transport?.method || 'unknown'} car/transit, ${profileRaw?.transport?.distance || 0} km/week. Short Flights: ${profileRaw?.transport?.shortFlights || 0}/yr, Long Flights: ${profileRaw?.transport?.longFlights || 0}/yr.
-      - Diet choice: ${profileRaw?.diet?.type || 'unknown'}, Sourcing: ${profileRaw?.diet?.sourcing || 'unknown'}, Food Waste tendency: ${profileRaw?.diet?.foodWaste || 'unknown'}.
-      - Energy environment: ${profileRaw?.energy?.homeSize || 'unknown'}, High energy devices: ${profileRaw?.energy?.highEnergyAppliances?.join(', ') || 'none'}, Clean energy source: ${profileRaw?.energy?.cleanEnergy || 'unknown'}.
-      - Shopping and waste criteria: Clothes shopping: ${profileRaw?.shopping?.clothing || 'unknown'}, Tech purchase cycle: ${profileRaw?.shopping?.electronics || 'unknown'}, Recycling rigor: ${profileRaw?.shopping?.recycling || 'unknown'}.
+      - Transport Commuting: ${sanitizePromptText(profileRaw?.transport?.method, 30) || 'unknown'} car/transit, ${profileRaw?.transport?.distance || 0} km/week. Short Flights: ${profileRaw?.transport?.shortFlights || 0}/yr, Long Flights: ${profileRaw?.transport?.longFlights || 0}/yr.
+      - Diet choice: ${sanitizePromptText(profileRaw?.diet?.type, 30) || 'unknown'}, Sourcing: ${sanitizePromptText(profileRaw?.diet?.sourcing, 30) || 'unknown'}, Food Waste tendency: ${sanitizePromptText(profileRaw?.diet?.foodWaste, 30) || 'unknown'}.
+      - Energy environment: ${sanitizePromptText(profileRaw?.energy?.homeSize, 30) || 'unknown'}, High energy devices: ${profileRaw?.energy?.highEnergyAppliances?.join(', ') || 'none'}, Clean energy source: ${sanitizePromptText(profileRaw?.energy?.cleanEnergy, 30) || 'unknown'}.
+      - Shopping and waste criteria: Clothes shopping: ${sanitizePromptText(profileRaw?.shopping?.clothing, 30) || 'unknown'}, Tech purchase cycle: ${sanitizePromptText(profileRaw?.shopping?.electronics, 30) || 'unknown'}, Recycling rigor: ${sanitizePromptText(profileRaw?.shopping?.recycling, 30) || 'unknown'}.
 
       Provide a JSON object response tailored specifically to their stats with the following fields:
       - headline: A single, cheerful, and encouraging sentence (max 15 words) noting their eco level.
@@ -226,11 +246,15 @@ app.post("/api/coach-insights", aiRateLimiter, async (req, res) => {
 
             const responseText = response.text;
             if (responseText) {
-              parsed = JSON.parse(responseText.trim());
-              isAiGenerated = true;
-              success = true;
-              console.log(`Successfully generated advice using ${modelName} on attempt ${attempt}`);
-              break;
+              const rawParsed = JSON.parse(responseText.trim());
+              const validated = validateCoachInsightResponse(rawParsed);
+              if (validated.success) {
+                parsed = validated.data;
+                isAiGenerated = true;
+                success = true;
+                console.log(`Successfully generated advice using ${modelName} on attempt ${attempt}`);
+                break;
+              }
             }
           } catch (apiError: unknown) {
             const errorMessage =
@@ -281,7 +305,7 @@ app.post("/api/coach-insights", aiRateLimiter, async (req, res) => {
     }
   } catch (error) {
     console.error("Server-side handler encountered an error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -297,7 +321,8 @@ app.post("/api/coach-chat", aiRateLimiter, async (req, res) => {
     }
 
     const { messages, profileRaw } = parsedBody.data;
-    const latestUserMessage = extractLatestUserMessage(messages);
+    const truncatedMessages = truncateChatMessages(messages);
+    const latestUserMessage = extractLatestUserMessage(truncatedMessages);
 
     if (!latestUserMessage) {
       return res.status(400).json({ error: "No valid user message found." });
@@ -331,23 +356,22 @@ app.post("/api/coach-chat", aiRateLimiter, async (req, res) => {
 
     // Prepare message history formatted according to Google GenAI expectations
     // Schema: [{ role: "user" | "model", parts: [{ text: "..." }] }]
-    const formattedContents = messages.map((m) => ({
+    const formattedContents = truncatedMessages.map((m) => ({
       role: m.role === "assistant" ? "model" : m.role,
       parts: m.parts.map((p) => ({ text: p.text })),
     }));
 
-    // Inject system instructions and user context
     const systemInstruction = `
       You are CarbonWise Coach, an ultra-supportive, professional, and knowledgeable climate scientist.
       The user is interacting with you to lower their carbon emissions and learn about sustainable lifestyle practices.
       The user's profile details are:
-      - Commute: ${profileRaw?.transport?.method || 'unknown'} car/transit
+      - Commute: ${sanitizePromptText(profileRaw?.transport?.method, 30) || 'unknown'} car/transit
       - Weekly travel: ${profileRaw?.transport?.distance || 0} km
-      - Diet style: ${profileRaw?.diet?.type || 'unknown'}
-      - House size: ${profileRaw?.energy?.homeSize || 'unknown'}
+      - Diet style: ${sanitizePromptText(profileRaw?.diet?.type, 30) || 'unknown'}
+      - House size: ${sanitizePromptText(profileRaw?.energy?.homeSize, 30) || 'unknown'}
       - High Energy Devices: ${profileRaw?.energy?.highEnergyAppliances?.join(', ') || 'none'}
-      - Clean energy tariff: ${profileRaw?.energy?.cleanEnergy || 'unknown'}
-      - Clothing purchase: ${profileRaw?.shopping?.clothing || 'unknown'}
+      - Clean energy tariff: ${sanitizePromptText(profileRaw?.energy?.cleanEnergy, 30) || 'unknown'}
+      - Clothing purchase: ${sanitizePromptText(profileRaw?.shopping?.clothing, 30) || 'unknown'}
       
       Keep your answers highly conversational, objective, and accurate, using clean Markdown formatting. Focus on helpful, encouraging, and highly contextual tips. Do not cite long tables of raw data unless asked.
     `;
@@ -363,8 +387,12 @@ app.post("/api/coach-chat", aiRateLimiter, async (req, res) => {
     });
 
     if (response && response.text) {
+      const validated = validateCoachChatResponse(response.text);
+      if (!validated.success) {
+        return res.status(502).json({ error: "Invalid AI response format." });
+      }
       return res.json({
-        text: response.text,
+        text: validated.data.text,
         isAiGenerated: true,
         isFallbackActive: false
       });
@@ -374,7 +402,7 @@ app.post("/api/coach-chat", aiRateLimiter, async (req, res) => {
 
   } catch (error: unknown) {
     console.error("Coach chat controller failed:", error);
-    res.status(500).json({ error: "Internal server error occurred processing conversation." });
+    return res.status(500).json({ error: "Internal server error occurred processing conversation." });
   }
 });
 

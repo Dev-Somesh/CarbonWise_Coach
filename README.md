@@ -71,23 +71,29 @@ npm run start
 ## Quality Assurance
 
 ```bash
-# TypeScript type-check
+# TypeScript + ESLint (includes jsx-a11y rules)
 npm run lint
 
-# Run unit tests (Vitest)
+# Run unit & component tests (Vitest)
 npm run test
 
 # Run tests with coverage report
 npm run test:coverage
+
+# End-to-end tests (Playwright)
+npm run test:e2e
 ```
 
-Test coverage includes carbon calculator math, recommendation engine sorting, and API input validation schemas.
+Test coverage includes carbon calculator math, recommendation engine, API validation schemas, component accessibility hooks, onboarding validation, and Playwright smoke flows for landing and demo dashboard.
 
 ## Security
 
 * API keys (`GEMINI_API_KEY`) are server-side only — never exposed to the browser
 * Express `helmet` security headers and `express-rate-limit` on AI endpoints (60 req / 15 min)
-* Zod schema validation on all `/api/*` POST payloads
+* Zod schema validation on all `/api/*` POST payloads (strict enum validation)
+* AI responses validated with Zod before returning to clients
+* Chat history truncated to last 20 messages (client + server)
+* Explicit Content-Security-Policy in production via Helmet
 * Request body size capped at 32 KB
 * User data stored locally in browser `localStorage` (privacy-first, no server persistence)
 

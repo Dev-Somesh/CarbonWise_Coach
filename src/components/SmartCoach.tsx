@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { UserProfile, CarbonFootprint, SustainabilityAction, CoachInsight } from '../types';
-import { generateContextualRecommendations } from '../utils/recommendations';
-import { Sparkles, ArrowRight, CheckCircle, Flame, ShieldCheck, RefreshCw, AlertCircle, Bookmark, MessageSquare, Send, Trash2 } from 'lucide-react';
+import { truncateChatMessages } from '../utils/apiValidation';
+import { Sparkles, CheckCircle, Flame, RefreshCw, AlertCircle, MessageSquare, Send, Trash2 } from 'lucide-react';
 
 interface SmartCoachProps {
   profile: UserProfile;
@@ -63,7 +63,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
 
       const data = await response.json();
       setInsight(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError('Could not connect to the remote Coach intelligence. Using offline rule-based advisor fallback instead.');
       
@@ -106,7 +106,8 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
     setChatLoading(true);
 
     try {
-      const formattedMessagesPaylaod = newMessages.map(m => ({
+      const recentMessages = truncateChatMessages(newMessages);
+      const formattedMessagesPaylaod = recentMessages.map(m => ({
         role: m.role,
         parts: [{ text: m.text }]
       }));
@@ -142,9 +143,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
   // Safe dynamic Markdown converter supporting bold text and bullet lines
   const renderFormattedText = (rawText: string) => {
     return rawText.split('\n').map((line, lineIdx) => {
-      let processedLine = line;
       const boldRegex = /\*\*(.*?)\*\*/g;
-      
       const parts = [];
       let lastIndex = 0;
       let match;
@@ -215,6 +214,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
   // Calculate carbon reductions made from completed actions
   const completedActions = actions.filter(a => a.completed);
   const totalSavings = completedActions.reduce((sum, a) => sum + a.impactKg, 0);
+  const isAiActive = insight?.isAiGenerated === true && !insight?.isFallbackActive;
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 animate-fade-in space-y-10">
@@ -223,16 +223,20 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-100 pb-6">
         <div>
           <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded">Smart Assistant</span>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 mt-2">Smart Sustainability Coach</h1>
+          <h1 id="assistant-title" className="text-3xl font-bold tracking-tight text-slate-900 mt-2">Smart Sustainability Coach</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Personalized advice powered by deep logic algorithms and server-side Gemini 3.5 models.
+            Personalized advice from rule-based science models{isAiActive ? ' and Gemini AI when available' : ''}. Profile data is sent to the server only when you use AI features.
           </p>
         </div>
 
         {/* Tab Swappers */}
-        <div className="flex bg-slate-100 p-1 rounded-xl">
+        <div className="flex bg-slate-100 p-1 rounded-xl" role="tablist" aria-label="Smart Coach views">
           <button
             onClick={() => setActiveTab('insights')}
+            role="tab"
+            aria-selected={activeTab === 'insights'}
+            aria-controls="coach-insights-panel"
+            id="coach-tab-insights"
             className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'insights'
                 ? 'bg-white text-slate-800 shadow-sm'
@@ -243,6 +247,10 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
           </button>
           <button
             onClick={() => setActiveTab('chat')}
+            role="tab"
+            aria-selected={activeTab === 'chat'}
+            aria-controls="coach-chat-panel"
+            id="coach-tab-chat"
             className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'chat'
                 ? 'bg-white text-slate-800 shadow-sm'
@@ -265,7 +273,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
           
           {/* TAB 1: INSIGHTS FEED */}
           {activeTab === 'insights' ? (
-            <div className="flex-1 space-y-6">
+            <div id="coach-insights-panel" role="tabpanel" aria-labelledby="coach-tab-insights" className="flex-1 space-y-6">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
                   <Sparkles className="w-4.5 h-4.5 animate-pulse" />
@@ -319,7 +327,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
                   {insight.recommendations && insight.recommendations.length > 0 && (
                     <div className="space-y-3 pt-2">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Key Priorities Highlighted</h4>
-                      <ul className="text-xs sm:text-sm text-slate-300 space-y-2" role="list">
+                      <ul className="text-xs sm:text-sm text-slate-300 space-y-2">
                         {insight.recommendations.map((recommendation, idx) => (
                           <li key={idx} className="flex items-start gap-2.5">
                             <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
@@ -335,7 +343,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
           ) : (
             
             /* TAB 2: INTERACTIVE AI CHAT CONTAINER */
-            <div className="flex-1 flex flex-col space-y-4">
+            <div id="coach-chat-panel" role="tabpanel" aria-labelledby="coach-tab-chat" className="flex-1 flex flex-col space-y-4">
               <div className="flex items-center justify-between border-b border-slate-850 pb-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
@@ -343,12 +351,13 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
                   </div>
                   <div>
                     <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400 block">Climate Advisor Chatbot</span>
-                    <span className="text-[10px] text-slate-400">Direct sandbox access to Gemini models</span>
+                    <span className="text-[10px] text-slate-400">Ask sustainability questions — responses use AI when configured</span>
                   </div>
                 </div>
 
                 <button
                   type="button"
+                  aria-label="Clear chat history"
                   onClick={() => {
                     setChatMessages([{
                       role: 'assistant',
@@ -364,7 +373,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
               </div>
 
               {/* Msg screen */}
-              <div className="h-80 overflow-y-auto pr-1 space-y-3.5 bg-slate-950/40 border border-slate-850 p-4 rounded-2xl">
+              <div className="h-80 overflow-y-auto pr-1 space-y-3.5 bg-slate-950/40 border border-slate-850 p-4 rounded-2xl" role="log" aria-live="polite" aria-relevant="additions" aria-label="Chat conversation">
                 {chatMessages.map((msg, idx) => (
                   <div
                     key={idx}
@@ -387,7 +396,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
                   </div>
                 ))}
                 {chatLoading && (
-                  <div className="flex justify-start">
+                  <div className="flex justify-start" role="status" aria-live="polite" aria-label="Coach is typing">
                     <div className="bg-slate-850 border border-slate-800 rounded-2xl p-3 px-4 rounded-tl-none max-w-[85%] flex items-center gap-2">
                       <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" />
                       <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.2s]" />
@@ -447,11 +456,15 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
             <div>
               <span className="text-[10px] font-mono font-bold uppercase text-slate-400">Coach Status</span>
               <div className="flex items-center gap-1.5 mt-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-sm font-semibold">Gemini 3.5 Engine Active</span>
+                <span className={`w-2.5 h-2.5 rounded-full ${isAiActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} aria-hidden="true" />
+                <span className="text-sm font-semibold">
+                  {isAiActive ? 'Gemini AI Active' : 'Local Rules Engine Active'}
+                </span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed mt-2">
-                Your credentials are loaded. Re-evaluate elements any time to regenerate recommendations or talk directly to the coach.
+                {isAiActive
+                  ? 'AI coaching is enabled. Re-evaluate any time to refresh recommendations.'
+                  : 'Running offline rule-based coaching. Configure GEMINI_API_KEY on the server to enable AI.'}
               </p>
             </div>
 
@@ -465,7 +478,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
                 Re-evaluate Habits
               </button>
               <div className="text-[10px] text-center text-slate-500 font-semibold uppercase font-mono">
-                Model: gemini-3.5-flash
+                {isAiActive ? 'Model: gemini-3.5-flash' : 'Mode: rules fallback'}
               </div>
             </div>
           </div>

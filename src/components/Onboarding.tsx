@@ -95,7 +95,7 @@ export default function Onboarding({ onComplete, initialProfile }: OnboardingPro
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-md p-6 sm:p-10">
         
         {/* Progress Header */}
-        <div className="flex justify-between items-center mb-5 border-b border-slate-100 pb-5" role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={4}>
+        <div className="flex justify-between items-center mb-5 border-b border-slate-100 pb-5" role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={4} aria-label={`Onboarding progress: step ${step} of 4`}>
           <div>
             <span className="text-xs font-mono font-bold tracking-wider text-emerald-600 uppercase">Onboarding Assessment</span>
             <h2 className="text-lg font-bold text-slate-800">
@@ -162,7 +162,6 @@ export default function Onboarding({ onComplete, initialProfile }: OnboardingPro
                       }}
                       placeholder="Enter name or nickname"
                       className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-400"
-                      autoFocus
                     />
                   </div>
                 </div>
@@ -200,6 +199,10 @@ export default function Onboarding({ onComplete, initialProfile }: OnboardingPro
                     step="10"
                     value={transport.distance}
                     onChange={(e) => setTransport(prev => ({ ...prev, distance: parseInt(e.target.value) }))}
+                    aria-valuemin={0}
+                    aria-valuemax={500}
+                    aria-valuenow={transport.distance}
+                    aria-valuetext={`${transport.distance} kilometers per week`}
                     className="w-full accent-emerald-500 cursor-pointer h-2 bg-slate-100 rounded-lg appearance-none"
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 font-medium px-1 mt-1">
@@ -276,14 +279,16 @@ export default function Onboarding({ onComplete, initialProfile }: OnboardingPro
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Leftovers & Food Scrap Wastage</label>
+                  <span className="block text-sm font-bold text-slate-700 mb-2">Leftovers & Food Scrap Wastage</span>
                   <p className="text-xs text-slate-400 mb-3">Rotting food in municipal waste dumps produces methane, a powerful climate warmer.</p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-3" role="group" aria-label="Food waste level">
                     {(['minimal', 'moderate', 'high'] as FoodWasteLevel[]).map((level) => (
                       <button
                         key={level}
                         type="button"
                         onClick={() => setDiet(prev => ({ ...prev, foodWaste: level }))}
+                        aria-pressed={diet.foodWaste === level}
+                        aria-label={`Food waste: ${level}`}
                         className={`py-3 px-4 rounded-xl border text-center font-semibold text-xs sm:text-sm transition-all focus:outline-none cursor-pointer ${
                           diet.foodWaste === level
                             ? 'border-emerald-500 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 ring-2 ring-emerald-500/20'
@@ -326,14 +331,16 @@ export default function Onboarding({ onComplete, initialProfile }: OnboardingPro
                 className="space-y-6"
               >
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Primary Residence Size</label>
+                  <span className="block text-sm font-bold text-slate-700 mb-2">Primary Residence Size</span>
                   <p className="text-xs text-slate-400 mb-3">Residential heating and cooling requirements directly scale with total floor plans and volumes.</p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-3" role="group" aria-label="Home size">
                     {(['apartment', 'medium-house', 'large-house'] as HomeSizeType[]).map((size) => (
                       <button
                         key={size}
                         type="button"
                         onClick={() => setEnergy(prev => ({ ...prev, homeSize: size }))}
+                        aria-pressed={energy.homeSize === size}
+                        aria-label={`Home size: ${size}`}
                         className={`py-3 px-2 rounded-xl border text-center font-semibold text-xs sm:text-sm transition-all focus:outline-none cursor-pointer ${
                           energy.homeSize === size
                             ? 'border-emerald-500 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 ring-2 ring-emerald-500/20'
@@ -349,13 +356,13 @@ export default function Onboarding({ onComplete, initialProfile }: OnboardingPro
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1 flex items-center gap-1.5 justify-between">
+                  <span className="block text-sm font-bold text-slate-700 mb-1 flex items-center gap-1.5 justify-between">
                     <span className="flex items-center gap-2">
                       <Flame className="w-4 h-4 text-emerald-500" />
                       High Load Domestic Appliances
                     </span>
                     <span className="text-[10px] bg-emerald-50 text-emerald-700 font-mono px-2 py-0.5 rounded">Multi-Select</span>
-                  </label>
+                  </span>
                   <p className="text-xs text-slate-400 mb-3">Select items running regularly inside your domicile environment:</p>
                   <div className="grid grid-cols-2 gap-3" role="group" aria-label="High load home appliances">
                     {[
@@ -415,14 +422,16 @@ export default function Onboarding({ onComplete, initialProfile }: OnboardingPro
                 className="space-y-6"
               >
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Apparel Purchases Category</label>
+                  <span className="block text-sm font-bold text-slate-700 mb-2">Apparel Purchases Category</span>
                   <p className="text-xs text-slate-400 mb-3">Fast fashion is incredibly resource intensive, producing high textile trash weight.</p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-3" role="group" aria-label="Clothing purchase frequency">
                     {(['none', 'moderate', 'frequent'] as PurchaseFrequency[]).map((freq) => (
                       <button
                         key={freq}
                         type="button"
                         onClick={() => setShopping(prev => ({ ...prev, clothing: freq }))}
+                        aria-pressed={shopping.clothing === freq}
+                        aria-label={`Clothing purchases: ${freq}`}
                         className={`py-3 px-2 rounded-xl border text-center font-semibold text-xs sm:text-sm transition-all focus:outline-none cursor-pointer ${
                           shopping.clothing === freq
                             ? 'border-emerald-500 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 ring-2 ring-emerald-500/20'
@@ -438,17 +447,19 @@ export default function Onboarding({ onComplete, initialProfile }: OnboardingPro
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                  <span className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-1.5">
                     <ShoppingBag className="w-4 h-4 text-emerald-500" />
                     Electronics Upgrade Lifespan
-                  </label>
+                  </span>
                   <p className="text-xs text-slate-400 mb-3">How often do you replace smartphones, digital tabs, laptops, or custom hardware monitors?</p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-3" role="group" aria-label="Electronics upgrade frequency">
                     {(['none', 'moderate', 'frequent'] as PurchaseFrequency[]).map((freq) => (
                       <button
                         key={freq}
                         type="button"
                         onClick={() => setShopping(prev => ({ ...prev, electronics: freq }))}
+                        aria-pressed={shopping.electronics === freq}
+                        aria-label={`Electronics upgrades: ${freq}`}
                         className={`py-3 px-2 rounded-xl border text-center font-semibold text-xs sm:text-sm transition-all focus:outline-none cursor-pointer ${
                           shopping.electronics === freq
                             ? 'border-emerald-500 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 ring-2 ring-emerald-500/20'

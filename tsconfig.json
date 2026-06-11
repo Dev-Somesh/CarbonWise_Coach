@@ -24,6 +24,14 @@
     "noEmit": true,
     "strict": true,
     "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true
-  }
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true
+  },
+  "include": [
+    "src",
+    "server.ts",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "e2e"
+  ]
 }
