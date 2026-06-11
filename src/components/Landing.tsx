@@ -1,5 +1,5 @@
 import React from 'react';
-import { Leaf, ArrowRight, ShieldCheck, Sparkles, Flame, HelpCircle, Car, Utensils, Zap, ShoppingBag, Globe, Award, Heart, MessageSquare, Footprints, LineChart, Sliders, FileText, Bot, Trophy, TrendingDown, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Sparkles, Flame, Car, Utensils, Zap, ShoppingBag, Footprints, LineChart, Sliders, FileText, Bot, Trophy, CheckCircle2 } from 'lucide-react';
 
 interface LandingProps {
   onStartOnboarding: () => void;

@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { UserProfile, CarbonFootprint, WeeklyChallenge, EmissionHistoryItem } from '../types';
+import { UserProfile, CarbonFootprint, WeeklyChallenge, EmissionHistoryItem, CommuteMethod, DietType, CleanEnergyType } from '../types';
 import {
   getEmissionsClassification,
   calculateTransportEmissions,
   calculateDietEmissions,
   calculateEnergyEmissions,
-  calculateShoppingEmissions
 } from '../utils/carbonCalculator';
 import { GLOBAL_BENCHMARKS } from '../utils/presets';
-import { Leaf, Calendar, Share2, Plus, TrendingDown, Sparkles, AlertCircle, Trash2, CheckCircle2, HelpCircle, Zap, RotateCw, Award, FileText } from 'lucide-react';
+import { Calendar, Share2, TrendingDown, Sparkles, AlertCircle, Trash2, CheckCircle2, HelpCircle, Zap, RotateCw, Award, FileText } from 'lucide-react';
 import { generateCarbonReport } from '../utils/pdfGenerator';
 import Achievements from './Achievements';
 import PeerComparison from './PeerComparison';
@@ -95,15 +94,15 @@ export default function Dashboard({
   const simulatedTransport = calculateTransportEmissions({
     ...profile.transport,
     distance: simTransportDistance,
-    method: simTransportMethod as any
+    method: simTransportMethod as CommuteMethod,
   });
   const simulatedDiet = calculateDietEmissions({
     ...profile.diet,
-    type: simDietType as any
+    type: simDietType as DietType,
   });
   const simulatedEnergy = calculateEnergyEmissions({
     ...profile.energy,
-    cleanEnergy: simCleanEnergy as any
+    cleanEnergy: simCleanEnergy as CleanEnergyType,
   });
   const simulatedShopping = footprint.shopping; // remains baseline constant
 
@@ -117,15 +116,15 @@ export default function Dashboard({
       transport: {
         ...profile.transport,
         distance: simTransportDistance,
-        method: simTransportMethod as any
+        method: simTransportMethod as CommuteMethod
       },
       diet: {
         ...profile.diet,
-        type: simDietType as any
+        type: simDietType as DietType
       },
       energy: {
         ...profile.energy,
-        cleanEnergy: simCleanEnergy as any
+        cleanEnergy: simCleanEnergy as CleanEnergyType
       }
     };
     onUpdateProfile(updatedProfile);
@@ -219,13 +218,15 @@ export default function Dashboard({
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 animate-fade-in space-y-10">
       
-      {/* Toast Alert */}
-      {successToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 border border-slate-800 text-white px-5 py-4 rounded-2xl flex items-center gap-3 shadow-2xl animate-slide-up max-w-sm" role="alert">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-          <span className="text-sm font-medium">{successToast}</span>
-        </div>
-      )}
+      {/* Toast Alert — persistent live region so screen readers catch dynamic updates */}
+      <div aria-live="polite" aria-atomic="true" className="fixed bottom-6 right-6 z-50 pointer-events-none">
+        {successToast && (
+          <div className="bg-slate-900 border border-slate-800 text-white px-5 py-4 rounded-2xl flex items-center gap-3 shadow-2xl animate-slide-up max-w-sm pointer-events-auto" role="status">
+            <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" aria-hidden="true" />
+            <span className="text-sm font-medium">{successToast}</span>
+          </div>
+        )}
+      </div>
 
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50 border border-slate-200/60 p-6 sm:p-8 rounded-3xl">

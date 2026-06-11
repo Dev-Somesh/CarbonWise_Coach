@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CarbonFootprint } from '../types';
 import { GLOBAL_BENCHMARKS } from '../utils/presets';
-import { Globe, ShieldCheck, Compass, Info, ArrowDown, ArrowUp, Shuffle } from 'lucide-react';
+import { Globe, Info, ArrowDown, ArrowUp } from 'lucide-react';
 
 interface PeerComparisonProps {
   footprint: CarbonFootprint;
@@ -56,7 +56,7 @@ export default function PeerComparison({ footprint }: PeerComparisonProps) {
   const getFeedbackMessage = () => {
     const usDiff = calculateDifference(GLOBAL_BENCHMARKS.usAverage);
     const worldDiff = calculateDifference(GLOBAL_BENCHMARKS.worldAverage);
-    const targetDiff = calculateDifference(GLOBAL_BENCHMARKS.target);
+    calculateDifference(GLOBAL_BENCHMARKS.target);
 
     if (footprint.total <= GLOBAL_BENCHMARKS.target) {
       return {

@@ -39,12 +39,14 @@ export default function DashboardWidget({ history, onDownloadJSON }: DashboardWi
   }));
 
   // Simple custom tooltip for polished dark-slate design matching CarbonWise Coach
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  interface TooltipPayloadItem { name: string; value: number; color: string; }
+  interface TooltipProps { active?: boolean; payload?: TooltipPayloadItem[]; label?: string; }
+  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-slate-900 border border-slate-800 text-white p-3.5 rounded-2xl shadow-xl text-xs space-y-1.5 font-sans">
           <p className="font-bold text-[10px] text-slate-400 uppercase tracking-wider">{label}</p>
-          {payload.map((pld: any) => (
+          {payload.map((pld) => (
             <div key={pld.name} className="flex justify-between items-center gap-6">
               <span className="flex items-center gap-2 font-medium text-slate-350">
                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: pld.color }} />

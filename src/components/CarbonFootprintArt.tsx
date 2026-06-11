@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Leaf, Award, Eye, Wind, Flame, ToggleLeft, ToggleRight, Sparkles } from 'lucide-react';
+import { Award, Eye, Wind, Flame } from 'lucide-react';
 
 interface CarbonFootprintArtProps {
   footprintTotal: number;

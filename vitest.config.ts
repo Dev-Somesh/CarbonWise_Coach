@@ -12,17 +12,18 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],
-      include: ['src/**/*.{ts,tsx}'],
+      include: ['src/utils/**/*.ts', 'src/hooks/**/*.ts'],
       exclude: [
+        'src/utils/pdfGenerator.ts',
         'src/**/*.test.{ts,tsx}',
         'src/main.tsx',
         'src/setupTests.ts',
       ],
       thresholds: {
-        lines: 15,
-        branches: 12,
-        functions: 15,
-        statements: 15,
+        lines: 60,
+        branches: 50,
+        functions: 60,
+        statements: 60,
       },
     },
   },

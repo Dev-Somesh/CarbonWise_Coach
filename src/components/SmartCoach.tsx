@@ -37,7 +37,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
   }, [chatMessages, activeTab]);
 
   // Fetch smart insight dynamically from server route
-  const fetchSmartCoachAdvice = async (force: boolean = false) => {
+  const fetchSmartCoachAdvice = async (_force: boolean = false) => {
     if (loading) return;
     setLoading(true);
     setError('');
@@ -89,9 +89,8 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
     }
   };
 
-  useEffect(() => {
-    fetchSmartCoachAdvice();
-  }, [profile.name, footprint.total, footprint.transport, footprint.diet, footprint.energy, footprint.shopping]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchSmartCoachAdvice(); }, [profile.name, footprint.total, footprint.transport, footprint.diet, footprint.energy, footprint.shopping]);
 
   // Handle send message to AI coach chat
   const handleSendChatMessage = async (e: React.FormEvent) => {
@@ -127,7 +126,7 @@ export default function SmartCoach({ profile, footprint, actions, onToggleAction
 
       const data = await res.json();
       setChatMessages(prev => [...prev, { role: 'assistant' as const, text: data.text }]);
-    } catch (err) {
+    } catch {
       setChatMessages(prev => [
         ...prev,
         {

@@ -1,5 +1,7 @@
 # CarbonWise Coach — Sustainable Climate Assistant
 
+**Live demo:** [https://carbonwisecoach.netlify.app](https://carbonwisecoach.netlify.app)
+
 CarbonWise Coach is a high-fidelity, client-side personal sustainability hub and climate coaching application. It is designed to evaluate individual annual greenhouse outputs, suggest micro-targeted greener habits, and keep users actively engaged via real-time challenges, comparative benchmarking, and smart AI consulting.
 
 ---
@@ -85,6 +87,26 @@ npm run test:e2e
 ```
 
 Test coverage includes carbon calculator math, recommendation engine, API validation schemas, component accessibility hooks, onboarding validation, and Playwright smoke flows for landing and demo dashboard.
+
+## SEO & Social Sharing
+
+The app ships production-ready metadata for search engines and link previews:
+
+* `index.html` — meta description, keywords, robots, canonical, Open Graph, Twitter Card
+* `public/og-image.png` — 1200×630 social preview image
+* `public/favicon.svg` + `apple-touch-icon.png` — app icons
+* `public/manifest.json` — PWA web app manifest
+* `public/robots.txt` + `public/sitemap.xml` — crawler hints
+* JSON-LD `WebApplication` structured data for rich results
+
+Set `APP_URL` before production build so canonical and OG image URLs resolve to absolute paths (already configured for Netlify):
+
+```bash
+APP_URL="https://carbonwisecoach.netlify.app"
+npm run build
+```
+
+On Netlify, add `APP_URL` and `GEMINI_API_KEY` under **Site settings → Environment variables**, then trigger a redeploy so meta tags pick up the absolute URLs.
 
 ## Security
 

@@ -1,4 +1,4 @@
-import { UserProfile, CarbonFootprint } from '../types';
+import { UserProfile } from '../types';
 
 export const DEFAULT_PROFILE: UserProfile = {
   name: '',

@@ -3,12 +3,94 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="CarbonWise Coach — measure your carbon footprint, track emissions, and get AI-powered sustainability coaching." />
-    <title>CarbonWise Coach — Sustainable Climate Assistant</title>
+
+    <!-- Primary SEO -->
+    <title>CarbonWise Coach — Personal Carbon Footprint Tracker &amp; AI Sustainability Coach</title>
+    <meta
+      name="description"
+      content="CarbonWise Coach helps you measure your annual carbon footprint across transport, diet, energy, and shopping — then track progress with AI coaching, challenges, and EPA/IPCC-backed calculations."
+    />
+    <meta
+      name="keywords"
+      content="carbon footprint calculator, sustainability coach, climate tracker, CO2 emissions, green lifestyle, carbon reduction, environmental app"
+    />
+    <meta name="author" content="Somesh Bhardwaj" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="application-name" content="CarbonWise Coach" />
+    <meta name="theme-color" content="#059669" />
+    <meta name="color-scheme" content="light" />
+
+    <!-- Canonical & icons (update og:url/canonical href after deploy if needed) -->
+    <link rel="canonical" href="https://carbonwise-coach.vercel.app/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CarbonWise Coach" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="CarbonWise Coach — Personal Carbon Footprint Tracker" />
+    <meta
+      property="og:description"
+      content="Measure your carbon footprint, track emissions over time, and get personalized AI sustainability coaching backed by EPA, IPCC, and IEA data."
+    />
+    <meta property="og:image" content="https://carbonwise-coach.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="CarbonWise Coach — measure, track, and reduce your carbon footprint" />
+    <meta property="og:url" content="https://carbonwise-coach.vercel.app/" />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CarbonWise Coach — Personal Carbon Footprint Tracker" />
+    <meta
+      name="twitter:description"
+      content="Interactive carbon footprint assessment, trend analytics, weekly challenges, and AI-powered sustainability coaching."
+    />
+    <meta name="twitter:image" content="https://carbonwise-coach.vercel.app/og-image.png" />
+    <meta name="twitter:image:alt" content="CarbonWise Coach sustainability dashboard preview" />
+
+    <!-- Structured data for search engines & automated reviewers -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "CarbonWise Coach",
+        "url": "https://carbonwise-coach.vercel.app/",
+        "description": "Personal sustainability hub to measure annual CO2e emissions, track reduction progress, and receive AI-powered climate coaching.",
+        "applicationCategory": "LifestyleApplication",
+        "operatingSystem": "Web Browser",
+        "browserRequirements": "Requires JavaScript",
+        "inLanguage": "en",
+        "author": {
+          "@type": "Person",
+          "name": "Somesh Bhardwaj"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "Carbon footprint assessment",
+          "Emission trend analytics",
+          "AI sustainability coaching",
+          "Weekly climate challenges",
+          "PDF progress reports"
+        ]
+      }
+    </script>
   </head>
   <body>
+    <noscript>
+      <h1>CarbonWise Coach</h1>
+      <p>
+        CarbonWise Coach is a web application for measuring your personal carbon footprint,
+        tracking emission trends, and receiving sustainability coaching. Please enable JavaScript to use the app.
+      </p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

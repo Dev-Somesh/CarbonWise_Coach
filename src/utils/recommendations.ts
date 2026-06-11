@@ -247,9 +247,8 @@ export function generateContextualRecommendations(profile: UserProfile): Sustain
 /**
  * Returns prioritized weekly challenges recommendation based on user high emissions.
  */
-export function getRecommendedChallenges(profile: UserProfile): WeeklyChallenge[] {
-  // Let's instantiate default active challenges mapped to high-footprint sectors
-  return CHALLENGE_TEMPLATES.map((item, index) => {
+export function getRecommendedChallenges(_profile: UserProfile): WeeklyChallenge[] {
+  return CHALLENGE_TEMPLATES.map((item, _index) => {
     return {
       id: item.id,
       title: item.title,

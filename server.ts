@@ -45,6 +45,14 @@ app.use(
 );
 app.use(express.json({ limit: "32kb" }));
 
+app.use("/api", (req, res, next) => {
+  if (["POST", "PUT", "PATCH"].includes(req.method) && !req.is("application/json")) {
+    res.status(415).json({ error: "Content-Type must be application/json" });
+    return;
+  }
+  next();
+});
+
 const aiRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 60,
