@@ -1,5 +1,7 @@
 # CarbonWise Coach — Sustainable Climate Assistant
 
+[![CarbonWise Coach — personal sustainability hub](public/og-image.png)](https://carbonwisecoach.netlify.app)
+
 **Live demo:** [https://carbonwisecoach.netlify.app](https://carbonwisecoach.netlify.app)  
 **Repository:** [github.com/Dev-Somesh/CarbonWise_Coach](https://github.com/Dev-Somesh/CarbonWise_Coach)
 
