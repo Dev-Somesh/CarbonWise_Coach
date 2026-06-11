@@ -2,6 +2,8 @@
 
 > **Start here.** This file is written for hackathon manual reviewers and automated evaluation systems scanning the repository. It highlights what is easy to miss in a quick pass and how to verify claims in under five minutes.
 
+> **AI evaluation field?** Copy the ready-made prompt from **[EVALUATION_PROMPT.md](EVALUATION_PROMPT.md)** and paste it where the platform runs AI review.
+
 ---
 
 ## Quick links
